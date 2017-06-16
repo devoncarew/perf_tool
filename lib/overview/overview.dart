@@ -3,85 +3,24 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:html' hide Screen;
 
-import 'about.dart';
-import 'framework.dart';
-import 'globals.dart';
-import 'memory/memory.dart';
-import 'performance/performance.dart';
-import 'service.dart';
-import 'timeline/timeline.dart';
-import 'ui/elements.dart';
-import 'ui/primer.dart';
+import '../framework.dart';
+import '../globals.dart';
+import '../ui/elements.dart';
 
-class PerfToolFramework extends Framework {
-  PerfToolFramework() {
-    setGlobal(ServiceInfo, new ServiceInfo());
-
-    addScreen(_initReferences(new AboutScreen()));
-    addScreen(_initReferences(new MainScreen()));
-    addScreen(_initReferences(new TimelineScreen()));
-    addScreen(_initReferences(new PerformanceScreen()));
-    addScreen(_initReferences(new MemoryScreen()));
-
-    initGlobalUI();
-  }
-
-  Screen _initReferences(Screen screen) {
-    for (Element element in querySelectorAll('a[href="${screen.ref}"]')) {
-      element.onClick.listen((event) {
-        if (element.attributes.containsKey('disabled')) return;
-
-        event.preventDefault();
-        navigateTo(screen.id);
-      });
-    }
-
-    return screen;
-  }
-
-  void initGlobalUI() {
-    // device status
-    CoreElement deviceStatus =
-        new CoreElement.from(querySelector('#deviceStatus'));
-    serviceInfo.onStateChange.listen((_) {
-      deviceStatus.clear();
-
-      if (serviceInfo.service != null) {
-        PTooltip.add(
-          deviceStatus,
-          '${serviceInfo.hostCPU} • ${serviceInfo.targetCpu}\n'
-              'SDK ${serviceInfo.sdkVersion}',
-        );
-        deviceStatus.add([
-          span(c: 'octicon octicon-device-mobile'),
-          span(text: ' connected'),
-        ]);
-      } else {
-        PTooltip.remove(deviceStatus);
-
-        deviceStatus.add([
-          span(c: 'octicon octicon-circle-slash'),
-          span(text: ' no device connected'),
-        ]);
-      }
-    });
-  }
-}
-
-class MainScreen extends Screen {
-  MainScreen() : super('Observatory', '/');
+class OverviewScreen extends Screen {
+  OverviewScreen() : super('Overview', '/');
 
   CoreElement statusElement;
 
   @override
   void createContent(CoreElement mainDiv) {
-    statusElement = p(text: ' ');
+    statusElement = p(text: ' ', c: 'text-center');
 
     mainDiv.add([
+      h2(text: 'Status'),
       statusElement,
-      new CoreElement('hr'),
+      h2(text: 'Views'),
       // TODO: Add more descriptive text.
       p()..setInnerHtml('''
 <b>Use the timeline view</b> to diagnose jank in your UI.
@@ -127,13 +66,5 @@ elementum tellus turpis nec arcu.'''),
           '${serviceInfo.hostCPU} • '
           '${serviceInfo.isolateRefs.length} $plural running';
     }
-  }
-}
-
-class NotFoundScreen extends Screen {
-  NotFoundScreen() : super('Not Found', 'notfound');
-
-  void createContent(CoreElement mainDiv) {
-    mainDiv.add(p(text: 'Page not found: ${window.location.pathname}'));
   }
 }

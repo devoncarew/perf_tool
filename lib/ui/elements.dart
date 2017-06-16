@@ -1,12 +1,6 @@
-// Copyright (c) 2017, the Dart project authors.  Please see the AUTHORS file
-// for details. All rights reserved. Use of this source code is governed by a
-// BSD-style license that can be found in the LICENSE file.
-
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library atom.elements;
 
 import 'dart:async';
 import 'dart:html' hide Point;
@@ -25,6 +19,9 @@ CoreElement div({String text, String c, String a}) =>
 
 CoreElement span({String text, String c, String a}) =>
     new CoreElement('span', text: text, classes: c, attributes: a);
+
+CoreElement h2({String text, String c, String a}) =>
+    new CoreElement('h2', text: text, classes: c, attributes: a);
 
 CoreElement p({String text, String c, String a}) =>
     new CoreElement('p', text: text, classes: c, attributes: a);
