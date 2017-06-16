@@ -8,7 +8,7 @@ import 'dart:html' hide Screen;
 import 'package:vm_service_lib/vm_service_lib.dart';
 
 import 'globals.dart';
-import 'main.dart';
+import 'perf_main.dart';
 import 'service.dart';
 import 'ui/elements.dart';
 
