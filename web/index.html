@@ -11,12 +11,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="scaffolded-by" content="https://github.com/google/stagehand">
-    <title>perf_tool</title>
-    <link rel="stylesheet" href="packages/perf_tool/ui/flex.css">
-    <link rel="stylesheet" href="styles.css">
+
+    <title>Perf tool</title>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/6.0.0/build.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css">
+    <link rel="stylesheet" href="packages/perf_tool/ui/flex.css">
+    <link rel="stylesheet" href="styles.css">
 
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script defer src="main.dart" type="application/dart"></script>
     <script defer src="packages/browser/dart.js"></script>
 </head>
@@ -28,34 +31,30 @@
         <a class="masthead-logo" id="title">Observatory</a>
 
         <nav class="masthead-nav" id="main-nav">
-            <a href="/">
-                Main
-            </a>
-            <a href="/timeline">
-                <span class="octicon octicon-pulse"></span> Timeline
-            </a>
-            <a href="/performance">
-                <span class="octicon octicon-dashboard"></span> Performance
-            </a>
-            <a href="/memory">
-                <span class="octicon octicon-package"></span> Memory
-            </a>
+            <a href="/">Main</a>
+            <a href="/timeline"><span class="octicon octicon-pulse"></span> Timeline</a>
+            <a href="/performance"><span class="octicon octicon-dashboard"></span> Performance</a>
+            <a href="/memory"><span class="octicon octicon-package"></span> Memory</a>
         </nav>
     </div>
 </header>
 
 <div id="content" class="container" flex style="overflow: auto;">
+    <div class="blankslate">
+        <p>Loading…</p>
+    </div>
 </div>
 
 <footer flex none class="footer">
     <div class="container">
-        <!--<a href="/about">About</a>-->
-        <!--<a href="/documentation">Documentation</a>-->
+        <a href="" hidden id="docsLink" target="_blank">Docs</a>
 
         <div style="float:right">
-            <span>Connected to IntelliJ</span>
+            <span>Foo bar</span>
             <span class="separator">&bull;</span>
-            <span>SDK 1.25.0</span>
+            <span>Baz quux</span>
+            <span class="separator">&bull;</span>
+            <span id="deviceStatus" class="interactable">no device connected</span>
         </div>
     </div>
 </footer>
