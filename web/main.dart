@@ -6,7 +6,7 @@ import 'package:perf_tool/main.dart';
 
 // TODO: we connect to a VM instance, by port
 
-// TODO: do we care about the individual isolates?
+// TODO: Do we care about the individual isolates?
 //       - for the timeline view, show info for all isolates
 //       - for the memory view, be able to select between isolates?
 //       - for the perf view, be able to select between isolates?
@@ -22,15 +22,13 @@ import 'package:perf_tool/main.dart';
 // localhost:9222/performance/isolate-342342
 //   show a combo list of the available isolates
 
-// Generally, there will just be one isolate. We want to show that one. The
-// oldest one?
+// TODO: write a wrapper around google charts
 
-// Have a Screen instance, which can save and restore state (or, enter and exit?)
+// TODO: make the status line real
 
-// Have a notion of an App, that has the stack of visited pages, and knows
-// how to layout of things in terms of the top-level nav.
+// TODO: write a general purpose (fast) table component
 
 void main() {
   PerfToolFramework framework = new PerfToolFramework();
-  framework.loadScreenFromLocation();
+  framework.performInitialLoad();
 }

@@ -2,17 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:html' hide Screen;
-
 import '../framework.dart';
-import '../ui/element.dart';
+import '../ui/elements.dart';
 
 class TimelineScreen extends Screen {
   TimelineScreen() : super('Timeline', 'timeline');
 
   @override
-  void createContent(Element mainDiv) {
-    // TODO:
-    mainDiv.children.add(p('Timeline todo:').element);
+  void createContent(CoreElement mainDiv) {
+    mainDiv.add(p(text: 'Timeline todo:'));
   }
+
+  HelpInfo get helpInfo => new HelpInfo(
+      'Docs and tips for the timeline view', 'http://www.cheese.com');
 }
