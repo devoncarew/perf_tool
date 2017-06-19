@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:html';
+import 'dart:html' hide Event;
+import 'dart:typed_data';
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
@@ -13,12 +14,17 @@ Future<VmService> connect(String host, int port, Completer finishedCompleter) {
   Completer<VmService> connectedCompleter = new Completer();
 
   ws.onOpen.listen((_) {
-    //_logger.info('Connected to observatory on ${url}.');
-
     VmService service = new VmService(
-      ws.onMessage.map((MessageEvent e) => e.data as String),
+      ws.onMessage.asyncMap((MessageEvent e) {
+        if (e.data is String) return e.data as String;
+
+        final FileReader fileReader = new FileReader();
+        fileReader.readAsArrayBuffer(e.data as Blob);
+        return fileReader.onLoadEnd.first.then((_) {
+          return new ByteData.view((fileReader.result as Uint8List).buffer);
+        });
+      }),
       (String message) => ws.send(message),
-      //log: new ObservatoryLog(_logger)
     );
 
     ws.onClose.listen((_) {
@@ -49,6 +55,9 @@ class ServiceInfo {
   Stream get onStateChange => _stateController.stream;
 
   void vmServiceOpened(VmService _service, Future onClosed) {
+    //_service.onSend.listen((s) => print('==> $s'));
+    //_service.onReceive.listen((s) => print('<== $s'));
+
     _service.getVM().then((VM vm) {
       targetCpu = vm.targetCPU;
       hostCPU = vm.hostCPU;
@@ -58,7 +67,8 @@ class ServiceInfo {
       }
       isolateRefs = vm.isolates;
 
-      print('${vm.hostCPU}, $sdkVersion');
+      print(vm.hostCPU);
+      print(vm.version);
 
       // TODO: listen for isolate changes - fire events
 
@@ -67,6 +77,35 @@ class ServiceInfo {
       _stateController.add(null);
 
       onClosed.then((_) => vmServiceClosed());
+
+      // TODO:
+      service.streamListen('VM');
+      service.streamListen('Isolate');
+      service.streamListen('Debug');
+      service.streamListen('GC');
+      service.streamListen('Timeline');
+      service.streamListen('_Graph');
+
+      service.onGCEvent.listen((Event event) => print(event.json));
+      service.onIsolateEvent.listen(print);
+
+      //service.getIsolate(isolateRefs.last.id).then((Isolate isolate) {
+      //  print(isolate);
+      //});
+
+      //service.collectAllGarbage(isolateRefs.first.id).then(print);
+      //service.collectAllGarbage(isolateRefs.last.id).then(print);
+
+      //service
+      //    .requestHeapSnapshot(isolateRefs.last.id, 'User', true)
+      //    .then(print)
+      //    .catchError(print);
+
+      //service
+      //    .getCpuProfile(isolateRefs.last.id, 'VMUser')
+      //    .then((CpuProfile response) {
+      //  print(response);
+      //});
     }).catchError((e) {
       // TODO:
       print(e);

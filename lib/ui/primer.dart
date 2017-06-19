@@ -17,3 +17,11 @@ class PTooltip {
     element.toggleAttribute('aria-label', false);
   }
 }
+
+class PButton extends CoreElement {
+  PButton(String text) : super('button', text: text, classes: 'btn') {
+    setAttribute('type', 'button');
+  }
+
+  void small() => clazz('btn-sm');
+}

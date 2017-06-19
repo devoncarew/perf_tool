@@ -5,6 +5,8 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:intl/intl.dart';
+
 final String loremIpsum = '''
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec faucibus dolor quis rhoncus feugiat. Ut imperdiet
 libero vel vestibulum vulputate. Aliquam consequat, lectus nec euismod commodo, turpis massa volutpat ex, a
@@ -32,14 +34,24 @@ final List<String> _words = loremIpsum
 
 String getLoremFragment([int wordCount]) {
   if (wordCount == null) wordCount = _r.nextInt(8) + 1;
-  return titleCase(
+  return toBeginningOfSentenceCase(
       new List.generate(wordCount, (_) => _words[_r.nextInt(_words.length)])
           .join(' '));
 }
 
-String titleCase(String str) {
-  if (str.isEmpty) return str;
-  return str.substring(0, 1).toUpperCase() + str.substring(1);
-}
-
 String escape(String text) => text == null ? '' : HTML_ESCAPE.convert(text);
+
+final NumberFormat nf = new NumberFormat.decimalPattern();
+
+class SampleData {
+  static SampleData random() {
+    return new SampleData(
+        getLoremFragment(), _r.nextInt(1200), _r.nextDouble() * 100.0);
+  }
+
+  final String method;
+  final int count;
+  final double usage;
+
+  SampleData(this.method, this.count, this.usage);
+}

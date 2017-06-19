@@ -4,8 +4,6 @@
 
 import 'package:perf_tool/perf_main.dart';
 
-// TODO: we connect to a VM instance, by port
-
 // TODO: Do we care about the individual isolates?
 //       - for the timeline view, show info for all isolates
 //       - for the memory view, be able to select between isolates?
@@ -21,12 +19,6 @@ import 'package:perf_tool/perf_main.dart';
 // localhost:9222/performance - redirect to the best isolate
 // localhost:9222/performance/isolate-342342
 //   show a combo list of the available isolates
-
-// TODO: write a wrapper around google charts
-
-// TODO: make the status line real
-
-// TODO: write a general purpose (fast) table component
 
 void main() {
   PerfToolFramework framework = new PerfToolFramework();

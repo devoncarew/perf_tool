@@ -51,7 +51,11 @@ CoreElement table() => new CoreElement('table');
 
 CoreElement tr() => new CoreElement('tr');
 
-CoreElement td() => new CoreElement('td');
+CoreElement th({String text, String c}) =>
+    new CoreElement('th', text: text, classes: c);
+
+CoreElement td({String text, String c}) =>
+    new CoreElement('td', text: text, classes: c);
 
 class CoreElement {
   final Element element;
@@ -68,9 +72,11 @@ class CoreElement {
   String get tag => element.tagName;
 
   String get id => attributes['id'];
+
   set id(String value) => setAttribute('id', value);
 
   String get src => attributes['src'];
+
   set src(String value) => setAttribute('src', value);
 
   bool hasAttribute(String name) => element.attributes.containsKey(name);
@@ -114,15 +120,10 @@ class CoreElement {
     element.text = value;
   }
 
-  // Atom classes.
-  void block() => clazz('block');
-  void inlineBlock() => clazz('inline-block');
-  void inlineBlockTight() => clazz('inline-block-tight');
-
   /// Add the given child to this element's list of children. [child] must be
   /// either a `CoreElement` or an `Element`.
   dynamic add(dynamic child) {
-    if (child is List) {
+    if (child is Iterable) {
       return child.map((c) => add(c)).toList();
     } else if (child is CoreElement) {
       element.children.add(child.element);
@@ -135,20 +136,26 @@ class CoreElement {
   }
 
   bool get isHidden => hasAttribute('hidden');
+
   void hidden([bool value]) => attribute('hidden', value);
 
   String get label => attributes['label'];
+
   set label(String value) => setAttribute('label', value);
 
   bool get disabled => hasAttribute('disabled');
+
   set disabled(bool value) => attribute('disabled', value);
 
   bool get enabled => !disabled;
+
   set enabled(bool value) => attribute('disabled', !value);
 
   // Layout types.
   void layout() => attribute('layout');
+
   void horizontal() => attribute('horizontal');
+
   void vertical() => attribute('vertical');
 
   void layoutHorizontal() {
@@ -163,6 +170,7 @@ class CoreElement {
 
   // Layout params.
   void fit() => attribute('fit');
+
   void flex([int flexAmount]) {
     attribute('flex', true);
 
@@ -256,23 +264,12 @@ class CoreElement {
   String toString() => element.toString();
 }
 
-class ProgressElement extends CoreElement {
-  CoreElement _progress;
-
-  ProgressElement() : super('div') {
-    block();
-    _progress = add(new CoreElement('progress')..inlineBlock());
-  }
-
-  set value(int val) => _progress.setAttribute('value', val.toString());
-  set max(int val) => _progress.setAttribute('max', val.toString());
-}
-
 class CloseButton extends CoreElement {
   CloseButton() : super('div', classes: 'close-button');
 }
 
 class TrustedHtmlTreeSanitizer implements NodeTreeSanitizer {
   const TrustedHtmlTreeSanitizer();
+
   void sanitizeTree(Node node) {}
 }

@@ -5,10 +5,10 @@
 import 'dart:html' hide Screen;
 
 import 'about.dart';
-import 'framework.dart';
+import 'framework/framework.dart';
 import 'globals.dart';
 import 'memory/memory.dart';
-import 'package:perf_tool/overview/overview.dart';
+import 'overview/overview.dart';
 import 'performance/performance.dart';
 import 'service.dart';
 import 'timeline/timeline.dart';
@@ -56,7 +56,7 @@ class PerfToolFramework extends Framework {
         );
         deviceStatus.add([
           span(c: 'octicon octicon-device-mobile'),
-          span(text: ' connected'),
+          span(text: ' ${serviceInfo.targetCpu}'),
         ]);
       } else {
         PTooltip.remove(deviceStatus);
