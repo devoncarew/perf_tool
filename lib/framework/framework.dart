@@ -7,18 +7,20 @@ import 'dart:html' hide Screen;
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
-import 'globals.dart';
-import 'perf_main.dart';
-import 'service.dart';
-import 'ui/elements.dart';
+import '../globals.dart';
+import '../perf_main.dart';
+import '../service.dart';
+import '../ui/elements.dart';
 
 class Framework {
   List<Screen> screens = [];
-
   Screen current;
+  _StatusLine _statusLine;
 
   Framework() {
     window.onPopState.listen(handlePopState);
+    _statusLine = new _StatusLine(
+        new CoreElement.from(querySelector('#rightStatusLine')));
   }
 
   void addScreen(Screen screen) {
@@ -97,7 +99,10 @@ class Framework {
       new CoreElement.from(querySelector('#content'));
 
   void load(Screen screen) {
-    current?.exiting();
+    if (current != null) {
+      current.exiting();
+      _statusLine.removeAll(current.statusItems);
+    }
 
     CoreElement element = mainElement;
     element.clear();
@@ -106,7 +111,8 @@ class Framework {
     // TODO: Don't do this when re-visiting a page.
     current.createContent(element);
 
-    current?.entering();
+    current.entering();
+    _statusLine.addAll(current.statusItems);
 
     updatePage();
   }
@@ -137,9 +143,45 @@ class Framework {
   }
 }
 
+class _StatusLine {
+  final CoreElement element;
+
+  _StatusLine(this.element);
+
+  void add(StatusItem item) {
+    SpanElement separator = new SpanElement()
+      ..text = '•'
+      ..classes.add('separator');
+
+    element.element.children.insert(0, separator);
+    element.element.children.insert(0, item.element.element);
+  }
+
+  void remove(StatusItem item) {
+    int index = element.element.children.indexOf(item.element.element);
+    if (index >= 0) {
+      element.element.children.removeAt(index);
+      element.element.children.removeAt(index);
+    }
+  }
+
+  void addAll(List<StatusItem> items) {
+    for (StatusItem item in items.reversed) {
+      add(item);
+    }
+  }
+
+  void removeAll(List<StatusItem> items) {
+    for (StatusItem item in items) {
+      remove(item);
+    }
+  }
+}
+
 abstract class Screen {
   final String name;
   final String id;
+  final List<StatusItem> statusItems = [];
 
   Screen(this.name, this.id);
 
@@ -151,6 +193,16 @@ abstract class Screen {
 
   void exiting() {}
 
+  void addStatusItem(StatusItem item) {
+    // TODO: If we're live, add to the screen
+    statusItems.add(item);
+  }
+
+  void removeStatusItems(StatusItem item) {
+    // TODO: If we're live, remove from the screen
+    statusItems.remove(item);
+  }
+
   HelpInfo get helpInfo => null;
 
   String toString() => id;
@@ -161,4 +213,10 @@ class HelpInfo {
   final String url;
 
   HelpInfo(this.title, this.url);
+}
+
+class StatusItem {
+  final CoreElement element;
+
+  StatusItem() : element = span();
 }

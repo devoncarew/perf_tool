@@ -27,7 +27,7 @@
 <body fullbleed layout vertical>
 
 <header flex none class="masthead">
-    <div class="container">
+    <div>
         <a class="masthead-logo" id="title">Observatory</a>
 
         <nav class="masthead-nav" id="main-nav">
@@ -39,21 +39,17 @@
     </div>
 </header>
 
-<div id="content" class="container" flex style="overflow: auto;">
+<div id="content" class="container" flex layout vertical style="overflow: auto;">
     <div class="blankslate">
         <p>Loading…</p>
     </div>
 </div>
 
 <footer flex none class="footer">
-    <div class="container">
+    <div>
         <a href="" hidden id="docsLink" target="_blank">Docs</a>
 
-        <div style="float:right">
-            <span>Foo bar</span>
-            <span class="separator">&bull;</span>
-            <span>Baz quux</span>
-            <span class="separator">&bull;</span>
+        <div style="float:right" id="rightStatusLine">
             <span id="deviceStatus" class="interactable">no device connected</span>
         </div>
     </div>

@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import '../framework.dart';
+import '../framework/framework.dart';
 import '../ui/elements.dart';
 
 class TimelineScreen extends Screen {
@@ -13,6 +13,6 @@ class TimelineScreen extends Screen {
     mainDiv.add(p(text: 'Timeline todo:'));
   }
 
-  HelpInfo get helpInfo => new HelpInfo(
-      'Docs and tips for the timeline view', 'http://www.cheese.com');
+  HelpInfo get helpInfo =>
+      new HelpInfo('timeline view docs and tips', 'http://www.cheese.com');
 }
