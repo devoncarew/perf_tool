@@ -9,7 +9,7 @@ class AboutScreen extends Screen {
   AboutScreen() : super('About', 'about');
 
   @override
-  void createContent(CoreElement mainDiv) {
-    mainDiv.add(p(text: 'About Observatory todo:'));
+  void createContent(Framework framework, CoreElement div) {
+    div.add(p(text: 'About Observatory todo:'));
   }
 }

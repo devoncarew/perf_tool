@@ -57,6 +57,8 @@ CoreElement th({String text, String c}) =>
 CoreElement td({String text, String c}) =>
     new CoreElement('td', text: text, classes: c);
 
+CoreElement form() => new CoreElement('form');
+
 class CoreElement {
   final Element element;
 

@@ -94,6 +94,11 @@ table th {
   font-weight: 600;
   color: #586069;
   background-color: #f3f3f3;
+  white-space: nowrap;
+}
+
+table th.wide {
+    width: 80%;
 }
 
 table td,
@@ -189,6 +194,7 @@ table tr.selected {
 
 .interactable {
     cursor: pointer;
+    user-select: none;
 }
 
 .footer strong {
@@ -196,7 +202,11 @@ table tr.selected {
 }
 
 .section + .section {
-  margin-top: 20px;
+  margin-top: 10px;
+}
+
+.margin-left {
+    margin-left: 4px;
 }
 
 .margin-right {

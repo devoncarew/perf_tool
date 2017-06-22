@@ -9,7 +9,7 @@ class TimelineScreen extends Screen {
   TimelineScreen() : super('Timeline', 'timeline');
 
   @override
-  void createContent(CoreElement mainDiv) {
+  void createContent(Framework framework, CoreElement mainDiv) {
     mainDiv.add(p(text: 'Timeline todo:'));
   }
 

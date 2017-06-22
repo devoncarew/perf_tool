@@ -44,7 +44,10 @@ class Table<T> {
                 span(text: column.title, c: 'interactable sortable');
             s.click(() => _columnClicked(column));
             spanForColumn[column] = s;
-            return th(c: column.numeric ? 'right' : 'left')..add(s);
+            CoreElement header = th(c: column.numeric ? 'right' : 'left')
+              ..add(s);
+            if (column.wide) header.clazz('wide');
+            return header;
           })));
 
       _table.add(_thead);
@@ -141,22 +144,29 @@ class Table<T> {
 
 abstract class Column<T> {
   final String title;
+  final bool wide;
 
-  Column(this.title);
+  Column(this.title, {this.wide: false});
 
   bool get numeric => false;
+
+  bool get usesHtml => false;
 
   dynamic getValue(T row);
 
   String render(dynamic value) {
     if (numeric) {
-      if (value is int && value < 1000) {
-        return value.toString();
-      } else {
-        return nf.format(value);
-      }
+      return fastIntl(value);
     }
     return value.toString();
+  }
+
+  static String fastIntl(int value) {
+    if (value is int && value < 1000) {
+      return value.toString();
+    } else {
+      return nf.format(value);
+    }
   }
 
   String toString() => title;
@@ -166,3 +176,42 @@ enum SortOrder {
   ascending,
   descending,
 }
+
+//class SampleData {
+//  static SampleData random() {
+//    double d = _r.nextDouble();
+//    return new SampleData(
+//        getLoremFragment(), _r.nextInt(1200), d, d * _r.nextDouble());
+//  }
+//
+//  final String method;
+//  final int count;
+//  final double usage;
+//  final double self;
+//
+//  SampleData(this.method, this.count, this.usage, this.self);
+//}
+//
+//class SampleColumnMethodName extends Column<SampleData> {
+//  SampleColumnMethodName() : super('Name', wide: true);
+//
+//  dynamic getValue(SampleData row) => row.method;
+//}
+//
+//class SampleColumnCount extends Column<SampleData> {
+//  SampleColumnCount() : super('Count');
+//
+//  bool get numeric => true;
+//
+//  dynamic getValue(SampleData row) => row.count;
+//}
+//
+//class SampleColumnUsage extends Column<SampleData> {
+//  SampleColumnUsage() : super('Usage');
+//
+//  bool get numeric => true;
+//
+//  dynamic getValue(SampleData row) => row.usage;
+//
+//  String render(dynamic value) => percent(value);
+//}

@@ -73,7 +73,7 @@ class PerfToolFramework extends Framework {
 class NotFoundScreen extends Screen {
   NotFoundScreen() : super('Not Found', 'notfound');
 
-  void createContent(CoreElement mainDiv) {
+  void createContent(Framework framework, CoreElement mainDiv) {
     mainDiv.add(p(text: 'Page not found: ${window.location.pathname}'));
   }
 }
