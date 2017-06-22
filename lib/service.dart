@@ -93,9 +93,6 @@ class ServiceInfo {
       //  print(isolate);
       //});
 
-      //service.collectAllGarbage(isolateRefs.first.id).then(print);
-      //service.collectAllGarbage(isolateRefs.last.id).then(print);
-
       //service
       //    .requestHeapSnapshot(isolateRefs.last.id, 'User', true)
       //    .then(print)

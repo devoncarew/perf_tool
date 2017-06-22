@@ -4,13 +4,9 @@
 
 import 'dart:async';
 
-import 'package:intl/intl.dart';
-
 import '../framework/framework.dart';
 import '../globals.dart';
-import '../tables/tables.dart';
 import '../ui/elements.dart';
-import '../utils.dart';
 
 class OverviewScreen extends Screen {
   OverviewScreen() : super('Overview', '/');
@@ -18,7 +14,7 @@ class OverviewScreen extends Screen {
   CoreElement statusElement;
 
   @override
-  void createContent(CoreElement mainDiv) {
+  void createContent(Frameworkframework, CoreElement mainDiv) {
     statusElement = p(text: ' ', c: 'text-center');
 
     mainDiv.add([
@@ -75,30 +71,4 @@ elementum tellus turpis nec arcu.'''),
           '${serviceInfo.isolateRefs.length} $plural running';
     }
   }
-}
-
-class SampleColumnMethodName extends Column<SampleData> {
-  SampleColumnMethodName() : super('Method name');
-
-  dynamic getValue(SampleData row) => row.method;
-}
-
-class SampleColumnCount extends Column<SampleData> {
-  SampleColumnCount() : super('Count');
-
-  bool get numeric => true;
-
-  dynamic getValue(SampleData row) => row.count;
-}
-
-class SampleColumnUsage extends Column<SampleData> {
-  final NumberFormat nf = new NumberFormat('0.0');
-
-  SampleColumnUsage() : super('Usage');
-
-  bool get numeric => true;
-
-  dynamic getValue(SampleData row) => row.usage;
-
-  String render(dynamic value) => nf.format(value);
 }

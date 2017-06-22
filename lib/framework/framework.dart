@@ -98,18 +98,25 @@ class Framework {
   CoreElement get mainElement =>
       new CoreElement.from(querySelector('#content'));
 
+  Map<Screen, List<Element>> _contents = {};
+
   void load(Screen screen) {
     if (current != null) {
       current.exiting();
       _statusLine.removeAll(current.statusItems);
+      _contents[current] = mainElement.element.children.toList();
+      mainElement.element.children.clear();
+    } else {
+      mainElement.element.children.clear();
     }
 
-    CoreElement element = mainElement;
-    element.clear();
-
     current = screen;
-    // TODO: Don't do this when re-visiting a page.
-    current.createContent(element);
+
+    if (_contents.containsKey(current)) {
+      mainElement.element.children.addAll(_contents[current]);
+    } else {
+      current.createContent(this, mainElement);
+    }
 
     current.entering();
     _statusLine.addAll(current.statusItems);
@@ -178,6 +185,16 @@ class _StatusLine {
   }
 }
 
+void toastError(String title, dynamic error) {
+  // TODO:
+  print('$title: $error');
+}
+
+void toast(String message) {
+  // TODO:
+  print(message);
+}
+
 abstract class Screen {
   final String name;
   final String id;
@@ -187,7 +204,7 @@ abstract class Screen {
 
   String get ref => id == '/' ? id : '/$id';
 
-  void createContent(CoreElement mainDiv) {}
+  void createContent(Framework framework, CoreElement mainDiv) {}
 
   void entering() {}
 
