@@ -24,7 +24,7 @@ class Table<T> {
 
   Map<Column, CoreElement> spanForColumn = {};
 
-  Table() : element = div(a: 'flex', c: 'overflow-auto table-border') {
+  Table() : element = div(a: 'flex', c: 'overflow-y table-border') {
     _table = new CoreElement('table')..clazz('full-width');
     element.add(_table);
   }
@@ -109,10 +109,16 @@ class Table<T> {
       CoreElement tableRow = tr();
 
       for (Column column in columns) {
-        tableRow.add(td(
-          text: column.render(column.getValue(row)),
-          c: column.numeric ? 'right' : null,
-        ));
+        if (column.usesHtml) {
+          tableRow.add(td(
+            c: column.numeric ? 'right' : null,
+          )..setInnerHtml(column.render(column.getValue(row))));
+        } else {
+          tableRow.add(td(
+            text: column.render(column.getValue(row)),
+            c: column.numeric ? 'right' : null,
+          ));
+        }
       }
 
       rowElements.add(tableRow.element);

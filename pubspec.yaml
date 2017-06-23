@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   intl: ^0.15.0
-  vm_service_lib: ^0.3.4
+  vm_service_lib: ^0.3.5
 
 dev_dependencies:
   browser: ^0.10.0

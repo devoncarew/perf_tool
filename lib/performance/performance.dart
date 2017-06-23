@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
+
 import 'package:vm_service_lib/vm_service_lib.dart';
 
 import '../charts/charts.dart';
@@ -80,9 +82,12 @@ elementum tellus turpis nec arcu.'''),
 
     serviceInfo.service
         .getCpuProfile(_isolateId, 'UserVM')
-        .then((CpuProfile profile) {
+        .then((CpuProfile profile) async {
       // TODO:
       print(profile);
+
+      _CalcProfile calc = new _CalcProfile(profile);
+      await calc.calc();
 
       _updateStatus(profile);
     }).catchError((e) {
@@ -112,78 +117,7 @@ elementum tellus turpis nec arcu.'''),
       DataTable data = new DataTable();
       data.addColumn('number', 'X');
       data.addColumn('number', 'CPU');
-      data.addRows([
-        [0, 0],
-        [1, 10],
-        [2, 23],
-        [3, 17],
-        [4, 18],
-        [5, 9],
-        [6, 11],
-        [7, 27],
-        [8, 33],
-        [9, 40],
-        [10, 32],
-        [11, 35],
-        [12, 30],
-        [13, 40],
-        [14, 42],
-        [15, 47],
-        [16, 44],
-        [17, 48],
-        [18, 52],
-        [19, 54],
-        [20, 42],
-        [21, 55],
-        [22, 56],
-        [23, 57],
-        [24, 60],
-        [25, 50],
-        [26, 52],
-        [27, 51],
-        [28, 49],
-        [29, 53],
-        [30, 55],
-        [31, 60],
-        [32, 61],
-        [33, 59],
-        [34, 62],
-        [35, 65],
-        [36, 62],
-        [37, 58],
-        [38, 55],
-        [39, 61],
-        [40, 64],
-        [41, 65],
-        [42, 63],
-        [43, 66],
-        [44, 67],
-        [45, 69],
-        [46, 69],
-        [47, 70],
-        [48, 72],
-        [49, 68],
-        [50, 66],
-        [51, 65],
-        [52, 67],
-        [53, 70],
-        [54, 71],
-        [55, 72],
-        [56, 73],
-        [57, 75],
-        [58, 70],
-        [59, 68],
-        [60, 64],
-        [61, 60],
-        [62, 65],
-        [63, 67],
-        [64, 68],
-        [65, 69],
-        [66, 70],
-        [67, 72],
-        [68, 75],
-        [69, 80]
-      ]);
+      data.addRows(new List.generate(100, (i) => [i, r.nextInt(100)]));
 
       LineChart chart = new LineChart(d.element);
       chart.draw(data, options: {
@@ -236,7 +170,11 @@ elementum tellus turpis nec arcu.'''),
 
     perfTable.setRows(
         new List<PerfData>.from(profile.functions.map((ProfileFunction f) {
-      return new PerfData(f.kind, funcRefName(f.function), 0.0, 0.0);
+      return new PerfData(
+          f.kind,
+          escape(funcRefName(f.function)),
+          f.exclusiveTicks / profile.sampleCount,
+          f.inclusiveTicks / profile.sampleCount);
     })));
   }
 }
@@ -273,7 +211,34 @@ class PerfColumnSelf extends Column<PerfData> {
 class PerfColumnMethodName extends Column<PerfData> {
   PerfColumnMethodName() : super('Method', wide: true);
 
-  dynamic getValue(PerfData row) => row.name;
+  bool get usesHtml => true;
+
+  dynamic getValue(PerfData row) {
+    if (row.kind == 'Dart') {
+      return row.name;
+    }
+    return '${row.name} <span class="function-kind ${row.kind}">${row.kind}</span>';
+  }
+}
+
+class _CalcProfile {
+  final CpuProfile profile;
+
+  _CalcProfile(this.profile);
+
+  Future calc() async {
+    // TODO:
+    profile.exclusiveCodeTrie;
+
+//    tries['exclusiveCodeTrie'] =
+//      new Uint32List.fromList(profile['exclusiveCodeTrie']);
+//    tries['inclusiveCodeTrie'] =
+//      new Uint32List.fromList(profile['inclusiveCodeTrie']);
+//    tries['exclusiveFunctionTrie'] =
+//      new Uint32List.fromList(profile['exclusiveFunctionTrie']);
+//    tries['inclusiveFunctionTrie'] =
+//      new Uint32List.fromList(profile['inclusiveFunctionTrie']);
+  }
 }
 
 /*

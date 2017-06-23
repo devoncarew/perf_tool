@@ -59,7 +59,8 @@ String isolateName(IsolateRef ref) {
 
 String funcRefName(FuncRef ref) {
   if (ref.owner is LibraryRef) {
-    return '${ref.owner.name}.${ref.name}';
+    //(ref.owner as LibraryRef).uri;
+    return ref.name;
   } else if (ref.owner is ClassRef) {
     return '${ref.owner.name}.${ref.name}';
   } else if (ref.owner is FuncRef) {

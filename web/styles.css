@@ -167,6 +167,11 @@ table tr.selected {
     overflow: auto;
 }
 
+.overflow-y {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 .full-width {
     width: 100%;
 }
@@ -228,4 +233,19 @@ table tr.selected {
 
 .perf-table {
 
+}
+
+span.function-kind {
+    background: #aaa;
+    color: #fff;
+    border-radius: 2px;
+    padding: 0 2px 1px 2px;
+}
+
+span.function-kind.Native {
+    background-color: #d73a3a;
+}
+
+span.function-kind.Tag {
+    background-color: cornflowerblue;
 }
