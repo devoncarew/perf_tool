@@ -7,6 +7,7 @@ import 'dart:async';
 import '../framework/framework.dart';
 import '../globals.dart';
 import '../ui/elements.dart';
+import '../utils.dart';
 
 class OverviewScreen extends Screen {
   OverviewScreen() : super('Overview', '/');
@@ -14,19 +15,17 @@ class OverviewScreen extends Screen {
   CoreElement statusElement;
 
   @override
-  void createContent(Frameworkframework, CoreElement mainDiv) {
-    statusElement = p(text: ' ', c: 'text-center');
+  void createContent(Framework framework, CoreElement mainDiv) {
+    statusElement = p(text: ' ');
 
     mainDiv.add([
       div(c: 'section')
         ..add([
-          h2(text: 'Status'),
           statusElement,
         ]),
       div(c: 'section')
         ..add([
           h2(text: 'Views'),
-          // TODO: Add more descriptive text.
           p()..setInnerHtml('''
 <b>Use the timeline view</b> to diagnose jank in your UI.
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec faucibus dolor quis rhoncus feugiat. Ut imperdiet
@@ -62,13 +61,14 @@ elementum tellus turpis nec arcu.'''),
   void _updateStatus([_]) {
     // Device connected (x64); 1 isolate running.
     if (serviceInfo.service == null) {
-      statusElement.text = 'Device: no device connected';
+      statusElement.setInnerHtml('<b>Device:</b> no device connected');
     } else {
       String plural =
           serviceInfo.isolateRefs.length == 1 ? 'isolate' : 'isolates';
-      statusElement.text = 'Device: ${serviceInfo.hostCPU} • '
+      String text = '${serviceInfo.hostCPU} • '
           '${serviceInfo.targetCpu} • '
           '${serviceInfo.isolateRefs.length} $plural running';
+      statusElement.setInnerHtml('<b>Device:</b> ${escape(text)}');
     }
   }
 }

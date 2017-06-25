@@ -67,6 +67,12 @@ class ServiceInfo {
       }
       isolateRefs = vm.isolates;
 
+      //for (IsolateRef ref in vm.isolates) {
+      //  _service.getIsolate(ref.id).then((Isolate isolate) {
+      //    print(isolate.extensionRPCs);
+      //  });
+      //}
+
       print(vm.hostCPU);
       print(vm.version);
 
@@ -78,16 +84,31 @@ class ServiceInfo {
 
       onClosed.then((_) => vmServiceClosed());
 
-      // TODO:
       service.streamListen('VM');
       service.streamListen('Isolate');
       service.streamListen('Debug');
       service.streamListen('GC');
       service.streamListen('Timeline');
+      service.streamListen('Extension');
       service.streamListen('_Graph');
 
       service.onGCEvent.listen((Event event) => print(event.json));
       service.onIsolateEvent.listen(print);
+      service.onEvent('Timeline').listen(print);
+
+      service.onExtensionEvent.listen((Event e) {
+        if (e.extensionKind == 'Flutter.Frame') {
+          ExtensionData data = e.extensionData;
+
+          int frameNumber = data.data['frameNumber'];
+          //int startTimeMicros = data.data['startTime'];
+          int elapsedMicros = data.data['elapsed'];
+
+          print('[frame $frameNumber] ${(elapsedMicros / 1000.0)
+              .toStringAsFixed(1)
+              .padLeft(4)}ms');
+        }
+      });
 
       //service.getIsolate(isolateRefs.last.id).then((Isolate isolate) {
       //  print(isolate);

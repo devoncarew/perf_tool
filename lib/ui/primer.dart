@@ -54,5 +54,15 @@ class PButton extends CoreElement {
     setAttribute('type', 'button');
   }
 
+  void primary() => clazz('btn-primary');
+
   void small() => clazz('btn-sm');
+}
+
+class PFlash extends CoreElement {
+  PFlash({String text}) : super('div', classes: 'flash flash-warn', text: text);
+
+  CoreElement addClose() {
+    return add(span(c: 'octicon octicon-x flash-close js-flash-close'));
+  }
 }

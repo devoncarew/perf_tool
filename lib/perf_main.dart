@@ -4,7 +4,6 @@
 
 import 'dart:html' hide Screen;
 
-import 'about.dart';
 import 'framework/framework.dart';
 import 'globals.dart';
 import 'memory/memory.dart';
@@ -15,11 +14,12 @@ import 'timeline/timeline.dart';
 import 'ui/elements.dart';
 import 'ui/primer.dart';
 
+// TODO: notification when the debug process goes away
+
 class PerfToolFramework extends Framework {
   PerfToolFramework() {
     setGlobal(ServiceInfo, new ServiceInfo());
 
-    addScreen(_initReferences(new AboutScreen()));
     addScreen(_initReferences(new OverviewScreen()));
     addScreen(_initReferences(new TimelineScreen()));
     addScreen(_initReferences(new PerformanceScreen()));

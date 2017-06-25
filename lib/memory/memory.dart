@@ -3,9 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
+import '../charts/charts.dart';
 import '../framework/framework.dart';
 import '../globals.dart';
 import '../tables/tables.dart';
@@ -18,11 +20,14 @@ class MemoryScreen extends Screen {
   PButton gcButton;
   PSelect isolateSelect;
   Table memoryTable;
+  Framework framework;
 
   MemoryScreen() : super('Memory', 'memory');
 
   @override
   void createContent(Framework framework, CoreElement mainDiv) {
+    this.framework = framework;
+
     mainDiv.add([
       chartDiv(),
       div(c: 'section'),
@@ -40,6 +45,7 @@ elementum tellus turpis nec arcu; memory roots.'''),
                 ..change(_handleIsolateSelect),
               loadSnapshotButton = new PButton('Load heap snapshot')
                 ..small()
+                ..primary()
                 ..clazz('margin-left')
                 ..click(_loadSnapshot),
               div()..flex(),
@@ -64,7 +70,7 @@ elementum tellus turpis nec arcu; memory roots.'''),
     serviceInfo.service.collectAllGarbage(_isolateId).then((_) {
       toast('Garbage collection performed.');
     }).catchError((e) {
-      toastError('Error from GC', e);
+      framework.showError('Error from GC', e);
     }).whenComplete(() {
       gcButton.disabled = false;
     });
@@ -105,12 +111,21 @@ elementum tellus turpis nec arcu; memory roots.'''),
     serviceInfo.service
         .requestHeapSnapshot(_isolateId, 'VM', true)
         .catchError((e) {
-      toastError('Error retrieving heap snapshot', e);
+      framework.showError('Error retrieving heap snapshot', e);
     });
 
     graphEventsCompleter.future.then((List<Event> events) {
       print('received ${events.length} heap snapshot events.');
       toast('Snapshot download complete.');
+
+      // type, kind, isolate, timestamp, chunkIndex, chunkCount, nodeCount, _data
+      for (Event e in events) {
+        int nodeCount = e.json['nodeCount'];
+        ByteData data = e.json['_data'];
+        print('  $nodeCount nodes, ${data.lengthInBytes ~/ 1024}k data');
+      }
+
+
     }).whenComplete(() {
       print('done');
       loadSnapshotButton.disabled = false;
@@ -119,7 +134,31 @@ elementum tellus turpis nec arcu; memory roots.'''),
 
   CoreElement chartDiv() {
     CoreElement d = div(c: 'perf-chart section');
-    d.element.style.backgroundColor = '#f0f0f0';
+
+    // TODO: clean up
+    LineChart.initChartLibrary().then((_) {
+      DataTable data = new DataTable();
+      data.addColumn('number', 'X');
+      data.addColumn('number', 'MB');
+      int value = 120;
+      data.addRows(new List.generate(400, (i) {
+        value += (r.nextInt(11) - 5);
+        if (value < 0) value == 0;
+        return [i, value];
+      }));
+
+      LineChart chart = new LineChart(d.element);
+      chart.draw(data, options: {
+        'chartArea': {'left': 35, 'right': 90, 'top': 12, 'bottom': 20},
+        'vAxis': {
+          'viewWindow': {'min': 0}
+        }
+      });
+    }).catchError((e) {
+      print('charting library not available');
+      d.toggleClass('error');
+    });
+
     return d;
   }
 
@@ -134,6 +173,11 @@ elementum tellus turpis nec arcu; memory roots.'''),
 
     memoryTable
         .setRows(new List<MemoryRow>.generate(100, (_) => MemoryRow.random()));
+
+    memoryTable.onSelect.listen((MemoryRow row) {
+      // TODO:
+      print(row);
+    });
 
     return memoryTable.element;
   }
@@ -153,6 +197,8 @@ class MemoryRow {
   final double percentage;
 
   MemoryRow(this.name, this.bytes, this.percentage);
+
+  String toString() => name;
 }
 
 class MemoryColumnName extends Column<MemoryRow> {

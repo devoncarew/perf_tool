@@ -27,6 +27,7 @@ String getLoremText([int paragraphCount = 1]) {
 final Random r = new Random();
 
 final List<String> _words = loremIpsum
+    .replaceAll('\n', ' ')
     .split(' ')
     .map((w) => w.toLowerCase())
     .map((w) => w.endsWith('.') ? w.substring(0, w.length - 1) : w)
@@ -45,6 +46,7 @@ String escape(String text) => text == null ? '' : HTML_ESCAPE.convert(text);
 final NumberFormat nf = new NumberFormat.decimalPattern();
 
 String percent(double d) => '${(d * 100).toStringAsFixed(1)}%';
+
 String percent2(double d) => '${(d * 100).toStringAsFixed(2)}%';
 
 String isolateName(IsolateRef ref) {

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
@@ -21,7 +22,9 @@ class PerformanceScreen extends Screen {
   PButton loadSnapshotButton;
   PButton resetButton;
   PSelect isolateSelect;
+  CoreElement progressElement;
   Table perfTable;
+  Framework framework;
 
   PerformanceScreen() : super('Performance', 'performance') {
     sampleCountStatusItem = new StatusItem();
@@ -35,6 +38,8 @@ class PerformanceScreen extends Screen {
 
   @override
   void createContent(Framework framework, CoreElement mainDiv) {
+    this.framework = framework;
+
     mainDiv.add([
       chartDiv(),
       div(c: 'section'),
@@ -52,9 +57,10 @@ elementum tellus turpis nec arcu.'''),
                 ..change(_handleIsolateSelect),
               loadSnapshotButton = new PButton('Load snapshot')
                 ..small()
+                ..primary()
                 ..clazz('margin-left')
                 ..click(_loadSnapshot),
-              div()..flex(),
+              progressElement = span(c: 'margin-left text-gray')..flex(),
               resetButton = new PButton('Reset VM counters')
                 ..small()
                 ..click(_reset),
@@ -66,9 +72,11 @@ elementum tellus turpis nec arcu.'''),
     _updateStatus(null);
 
     isolateSelect.clear();
-    print(serviceInfo.isolateRefs);
-    serviceInfo.isolateRefs.forEach(
-        (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
+
+    if (serviceInfo.isolateRefs != null) {
+      serviceInfo.isolateRefs.forEach(
+              (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
+    }
   }
 
   void _handleIsolateSelect() {
@@ -79,6 +87,8 @@ elementum tellus turpis nec arcu.'''),
 
   void _loadSnapshot() {
     loadSnapshotButton.disabled = true;
+
+    progressElement.text = 'Loading snapshot…';
 
     serviceInfo.service
         .getCpuProfile(_isolateId, 'UserVM')
@@ -91,9 +101,10 @@ elementum tellus turpis nec arcu.'''),
 
       _updateStatus(profile);
     }).catchError((e) {
-      toastError('', e);
+      framework.showError('', e);
     }).whenComplete(() {
       loadSnapshotButton.disabled = false;
+      progressElement.text = '';
     });
   }
 
@@ -103,7 +114,7 @@ elementum tellus turpis nec arcu.'''),
     serviceInfo.service.clearCpuProfile(_isolateId).then((_) {
       toast('VM counters reset.');
     }).catchError((e) {
-      toastError('Error resetting counters', e);
+      framework.showError('Error resetting counters', e);
     }).whenComplete(() {
       resetButton.disabled = false;
     });
@@ -117,12 +128,21 @@ elementum tellus turpis nec arcu.'''),
       DataTable data = new DataTable();
       data.addColumn('number', 'X');
       data.addColumn('number', 'CPU');
-      data.addRows(new List.generate(100, (i) => [i, r.nextInt(100)]));
+      int value = 30;
+      data.addRows(new List.generate(400, (i) {
+        value += (r.nextInt(7) - 3);
+        value = math.max(0, math.min(100, value));
+        return [i, value];
+      }));
 
       LineChart chart = new LineChart(d.element);
       chart.draw(data, options: {
-        'chartArea': {'left': 35, 'right': 90, 'top': 10, 'bottom': 20}
+        'chartArea': {'left': 35, 'right': 90, 'top': 12, 'bottom': 20},
+        'vAxis': {
+          'viewWindow': {'min': 0, 'max': 100}
+        }
       });
+      // ticks: [0, 25, 50, 75, 100] // display labels every 25
     }).catchError((e) {
       print('charting library not available');
       d.toggleClass('error');
@@ -141,6 +161,11 @@ elementum tellus turpis nec arcu.'''),
     perfTable.setSortColumn(perfTable.columns.first);
 
     perfTable.setRows(new List<PerfData>());
+
+    perfTable.onSelect.listen((PerfData data) {
+      // TODO:
+      print(data);
+    });
 
     return perfTable.element;
   }
@@ -186,6 +211,8 @@ class PerfData {
   final double inclusive;
 
   PerfData(this.kind, this.name, this.self, this.inclusive);
+
+  String toString() => '[$kind] $name';
 }
 
 class PerfColumnInclusive extends Column<PerfData> {
@@ -217,7 +244,8 @@ class PerfColumnMethodName extends Column<PerfData> {
     if (row.kind == 'Dart') {
       return row.name;
     }
-    return '${row.name} <span class="function-kind ${row.kind}">${row.kind}</span>';
+    return '${row.name} <span class="function-kind ${row.kind}">${row
+        .kind}</span>';
   }
 }
 

@@ -90,6 +90,10 @@ table thead {
     border-bottom: 1px solid #dfe2e5;
 }
 
+tbody.selectable tr {
+    cursor: default;
+}
+
 table th {
   font-weight: 600;
   color: #586069;
@@ -152,6 +156,10 @@ table tr.selected {
 
 .table-border {
    border: 1px solid #dfe2e5;
+}
+
+form[horizontal] {
+    align-items: baseline;
 }
 
 .nowrap {
@@ -248,4 +256,8 @@ span.function-kind.Native {
 
 span.function-kind.Tag {
     background-color: cornflowerblue;
+}
+
+.flash {
+    margin-bottom: 20px;
 }

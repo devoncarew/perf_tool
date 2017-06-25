@@ -2,12 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:html';
 
 import '../ui/elements.dart';
 import '../utils.dart';
-
-// TODO: selection
 
 class Table<T> {
   final CoreElement element;
@@ -24,10 +23,14 @@ class Table<T> {
 
   Map<Column, CoreElement> spanForColumn = {};
 
+  StreamController<T> _selectController = new StreamController.broadcast();
+
   Table() : element = div(a: 'flex', c: 'overflow-y table-border') {
     _table = new CoreElement('table')..clazz('full-width');
     element.add(_table);
   }
+
+  Stream<T> get onSelect => _selectController.stream;
 
   void addColumn(Column<T> column) {
     columns.add(column);
@@ -54,7 +57,7 @@ class Table<T> {
     }
 
     if (_tbody == null) {
-      _tbody = new CoreElement('tbody');
+      _tbody = new CoreElement('tbody', classes: 'selectable');
       _table.add(_tbody);
     }
 
@@ -102,6 +105,8 @@ class Table<T> {
   }
 
   void _rebuildTable() {
+    _clearSelection();
+
     // Re-build the table.
     List<Element> rowElements = [];
 
@@ -121,12 +126,39 @@ class Table<T> {
         }
       }
 
+      tableRow.click(() {
+        _select(tableRow, row);
+      });
+
       rowElements.add(tableRow.element);
     }
 
     _tbody.clear();
     _tbody.element.children.addAll(rowElements);
   }
+
+  CoreElement _selectedElement;
+  T _selectedObject;
+
+  void _select(CoreElement elementRow, T object) {
+    if (_selectedObject == object) return;
+
+    if (_selectedElement != null) {
+      _selectedElement.toggleClass('selected', false);
+      _selectedElement = null;
+    }
+
+    _selectedElement = elementRow;
+    _selectedObject = object;
+
+    if (_selectedElement != null) {
+      _selectedElement.toggleClass('selected', true);
+    }
+
+    _selectController.add(object);
+  }
+
+  void _clearSelection() => _select(null, null);
 
   void setSortColumn(Column<T> column) {
     _sortColumn = column;

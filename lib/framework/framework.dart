@@ -11,6 +11,7 @@ import '../globals.dart';
 import '../perf_main.dart';
 import '../service.dart';
 import '../ui/elements.dart';
+import '../ui/primer.dart';
 
 class Framework {
   List<Screen> screens = [];
@@ -26,8 +27,6 @@ class Framework {
   void addScreen(Screen screen) {
     screens.add(screen);
   }
-
-  static int foo = 0;
 
   void navigateTo(String id) {
     Screen screen = getScreen(id);
@@ -82,8 +81,7 @@ class Framework {
     connect('localhost', port, finishedCompleter).then((VmService service) {
       serviceInfo.vmServiceOpened(service, finishedCompleter.future);
     }).catchError((e) {
-      // TODO:
-      print('unable to connect to service on port $port: $e');
+      showError('Unable to connect to service on port $port');
     });
   }
 
@@ -148,6 +146,24 @@ class Framework {
       helpLink.hidden(false);
     }
   }
+
+  void showError(String title, [dynamic error]) {
+    PFlash flash = new PFlash();
+    flash.addClose().click(clearError);
+    flash.add(span(text: title));
+    if (error != null) {
+      flash.add(new CoreElement('br'));
+      flash.add(span(text: '$error'));
+    }
+
+    CoreElement errorContainer =
+        new CoreElement.from(querySelector('#error-container'));
+    errorContainer.add(flash);
+  }
+
+  void clearError() {
+    querySelector('#error-container').children.clear();
+  }
 }
 
 class _StatusLine {
@@ -183,11 +199,6 @@ class _StatusLine {
       remove(item);
     }
   }
-}
-
-void toastError(String title, dynamic error) {
-  // TODO:
-  print('$title: $error');
 }
 
 void toast(String message) {
