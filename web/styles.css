@@ -244,10 +244,14 @@ form[horizontal] {
 }
 
 span.function-kind {
-    background: #aaa;
+    background: #888;
     color: #fff;
     border-radius: 2px;
     padding: 0 2px 1px 2px;
+}
+
+span.function-kind.Stub {
+    background: #888;
 }
 
 span.function-kind.Native {

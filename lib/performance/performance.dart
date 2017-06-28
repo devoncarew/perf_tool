@@ -75,7 +75,7 @@ elementum tellus turpis nec arcu.'''),
 
     if (serviceInfo.isolateRefs != null) {
       serviceInfo.isolateRefs.forEach(
-              (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
+          (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
     }
   }
 
@@ -191,15 +191,15 @@ elementum tellus turpis nec arcu.'''),
       new HelpInfo('performance view docs and tips', 'http://www.cheese.com');
 
   void _process(CpuProfile profile) {
-//    print(profile.codes.map((cr) => cr.code.name).toList());
-
     perfTable.setRows(
         new List<PerfData>.from(profile.functions.map((ProfileFunction f) {
+      int count = math.max(1, profile.sampleCount);
       return new PerfData(
-          f.kind,
-          escape(funcRefName(f.function)),
-          f.exclusiveTicks / profile.sampleCount,
-          f.inclusiveTicks / profile.sampleCount);
+        f.kind,
+        escape(funcRefName(f.function)),
+        f.exclusiveTicks / count,
+        f.inclusiveTicks / count,
+      );
     })));
   }
 }
