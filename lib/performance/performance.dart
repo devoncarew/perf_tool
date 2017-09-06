@@ -23,7 +23,7 @@ class PerformanceScreen extends Screen {
   PButton resetButton;
   PSelect isolateSelect;
   CoreElement progressElement;
-  Table perfTable;
+  Table<PerfData> perfTable;
   Framework framework;
 
   PerformanceScreen() : super('Performance', 'performance') {

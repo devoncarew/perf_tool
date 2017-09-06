@@ -19,7 +19,7 @@ class MemoryScreen extends Screen {
   PButton loadSnapshotButton;
   PButton gcButton;
   PSelect isolateSelect;
-  Table memoryTable;
+  Table<MemoryRow> memoryTable;
   Framework framework;
 
   MemoryScreen() : super('Memory', 'memory');
