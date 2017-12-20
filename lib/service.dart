@@ -44,7 +44,7 @@ Future<VmService> connect(String host, int port, Completer finishedCompleter) {
 }
 
 class ServiceInfo {
-  StreamController _stateController = new StreamController.broadcast();
+  final StreamController _stateController = new StreamController.broadcast();
 
   VmService service;
   String targetCpu;

@@ -96,7 +96,7 @@ class Framework {
   CoreElement get mainElement =>
       new CoreElement.from(querySelector('#content'));
 
-  Map<Screen, List<Element>> _contents = {};
+  final Map<Screen, List<Element>> _contents = {};
 
   void load(Screen screen) {
     if (current != null) {

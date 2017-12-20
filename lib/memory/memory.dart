@@ -124,8 +124,6 @@ elementum tellus turpis nec arcu; memory roots.'''),
         ByteData data = e.json['_data'];
         print('  $nodeCount nodes, ${data.lengthInBytes ~/ 1024}k data');
       }
-
-
     }).whenComplete(() {
       print('done');
       loadSnapshotButton.disabled = false;

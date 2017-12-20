@@ -23,7 +23,8 @@ class Table<T> {
 
   Map<Column, CoreElement> spanForColumn = {};
 
-  StreamController<T> _selectController = new StreamController.broadcast();
+  final StreamController<T> _selectController =
+      new StreamController.broadcast();
 
   Table() : element = div(a: 'flex', c: 'overflow-y table-border') {
     _table = new CoreElement('table')..clazz('full-width');
