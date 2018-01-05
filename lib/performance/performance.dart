@@ -7,17 +7,17 @@ import 'dart:math' as math;
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
-import '../charts/charts.dart';
+import '../charts.dart';
 import '../framework/framework.dart';
 import '../globals.dart';
-import '../tables/tables.dart';
+import '../tables.dart';
 import '../ui/elements.dart';
 import '../ui/primer.dart';
 import '../utils.dart';
 
 class PerformanceScreen extends Screen {
-  StatusItem sampleCountStatusItem;
-  StatusItem sampleFreqStatusItem;
+  StatusItem sampleCountStatus;
+  StatusItem sampleFreqStatus;
 
   PButton loadSnapshotButton;
   PButton resetButton;
@@ -26,14 +26,15 @@ class PerformanceScreen extends Screen {
   Table<PerfData> perfTable;
   Framework framework;
 
-  PerformanceScreen() : super('Performance', 'performance') {
-    sampleCountStatusItem = new StatusItem();
-    sampleCountStatusItem.element.text = '20,766 samples';
-    addStatusItem(sampleCountStatusItem);
+  PerformanceScreen()
+      : super('Performance', 'performance', 'octicon-dashboard') {
+    sampleCountStatus = new StatusItem();
+    sampleCountStatus.element.text = '20,766 samples';
+    addStatusItem(sampleCountStatus);
 
-    sampleFreqStatusItem = new StatusItem();
-    sampleFreqStatusItem.element.text = '32 frames per sample @ 1000Hz';
-    addStatusItem(sampleFreqStatusItem);
+    sampleFreqStatus = new StatusItem();
+    sampleFreqStatus.element.text = '32 frames per sample @ 1000Hz';
+    addStatusItem(sampleFreqStatus);
   }
 
   @override
@@ -73,8 +74,8 @@ elementum tellus turpis nec arcu.'''),
 
     isolateSelect.clear();
 
-    if (serviceInfo.isolateRefs != null) {
-      serviceInfo.isolateRefs.forEach(
+    if (serviceInfo.isolateManager.isolates != null) {
+      serviceInfo.isolateManager.isolates.forEach(
           (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
     }
   }
@@ -172,15 +173,15 @@ elementum tellus turpis nec arcu.'''),
 
   void _updateStatus(CpuProfile profile) {
     if (profile == null) {
-      sampleCountStatusItem.element.text = 'no snapshot loaded';
-      sampleFreqStatusItem.element.text = ' ';
+      sampleCountStatus.element.text = ' - ';
+      sampleFreqStatus.element.text = ' - ';
     } else {
       Duration timeSpan = new Duration(seconds: profile.timeSpan.round());
       String s = timeSpan.toString();
       s = s.substring(0, s.length - 7);
-      sampleCountStatusItem.element.text =
+      sampleCountStatus.element.text =
           '${nf.format(profile.sampleCount)} samples over $s';
-      sampleFreqStatusItem.element.text =
+      sampleFreqStatus.element.text =
           '${profile.stackDepth} frames per sample @ ${profile.samplePeriod}Hz';
 
       _process(profile);
@@ -188,7 +189,7 @@ elementum tellus turpis nec arcu.'''),
   }
 
   HelpInfo get helpInfo =>
-      new HelpInfo('performance view docs and tips', 'http://www.cheese.com');
+      new HelpInfo('performance view', 'http://www.cheese.com');
 
   void _process(CpuProfile profile) {
     perfTable.setRows(

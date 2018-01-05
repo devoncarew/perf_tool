@@ -6,7 +6,7 @@ import 'service.dart';
 
 final Map globals = {};
 
-ServiceInfo get serviceInfo => globals[ServiceInfo];
+ServiceConnectionManager get serviceInfo => globals[ServiceConnectionManager];
 
 void setGlobal(dynamic clazz, dynamic instance) {
   globals[clazz] = instance;

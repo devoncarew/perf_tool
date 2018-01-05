@@ -90,6 +90,10 @@ table thead {
     border-bottom: 1px solid #dfe2e5;
 }
 
+table tbody {
+    vertical-align: top;
+}
+
 tbody.selectable tr {
     cursor: default;
 }
@@ -205,6 +209,20 @@ form[horizontal] {
     margin-right: 20px;
 }
 
+[text-center] {
+    text-align: center;
+}
+
+[horiz-padding] {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.footer-status {
+    display: inline-block;
+    min-width: 100px;
+}
+
 .interactable {
     cursor: pointer;
     user-select: none;
@@ -264,4 +282,12 @@ span.function-kind.Tag {
 
 .flash {
     margin-bottom: 20px;
+}
+
+a[disabled] {
+    cursor: default;
+}
+
+.masthead a[disabled]:hover {
+    color: rgba(255, 255, 255, 0.5);
 }

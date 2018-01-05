@@ -14,8 +14,8 @@
 
     <title>Perf tool</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/6.0.0/build.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/octicons/4.4.0/font/octicons.css">
+    <link rel="stylesheet" href="packages/perf_tool/ui/primer_6.0.0.css">
+    <link rel="stylesheet" href="packages/perf_tool/ui/octicons_4.4.0.css">
     <link rel="stylesheet" href="packages/perf_tool/ui/flex.css">
     <link rel="stylesheet" href="styles.css">
 
@@ -31,10 +31,8 @@
         <a class="masthead-logo" id="title">Observatory</a>
 
         <nav class="masthead-nav" id="main-nav">
-            <a href="/">Overview</a>
-            <a href="/timeline"><span class="octicon octicon-pulse"></span> Timeline</a>
-            <a href="/performance"><span class="octicon octicon-dashboard"></span> Performance</a>
-            <a href="/memory"><span class="octicon octicon-package"></span> Memory</a>
+            <!-- add the known pages -->
+            <a disabled><span class="octicon octicon-package"></span><span> Memory</span></a><a disabled><span class="octicon octicon-dashboard"></span><span> Performance</span></a><a disabled><span class="octicon octicon-pulse"></span><span> Timeline</span></a><a disabled><span class="octicon octicon-clippy"></span><span> Logging</span></a>
         </nav>
     </div>
 </header>
@@ -47,13 +45,15 @@
     </div>
 </div>
 
-<footer flex none class="footer">
-    <div>
+<footer flex layout horizontal none class="footer">
+    <div class="footer-status" id="global-status">
+    </div>
+    
+    <div class="footer-status" flex text-center horiz-padding>
         <a href="" hidden id="docsLink" target="_blank">Docs</a>
+    </div>
 
-        <div style="float:right" id="rightStatusLine">
-            <span id="deviceStatus" class="interactable">no device connected</span>
-        </div>
+    <div class="footer-status text-right" id="page-status">
     </div>
 </footer>
 

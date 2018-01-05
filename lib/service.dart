@@ -43,14 +43,14 @@ Future<VmService> connect(String host, int port, Completer finishedCompleter) {
   return connectedCompleter.future;
 }
 
-class ServiceInfo {
+class ServiceConnectionManager {
   final StreamController _stateController = new StreamController.broadcast();
+  final IsolateManager isolateManager = new IsolateManager();
 
   VmService service;
   String targetCpu;
   String hostCPU;
   String sdkVersion;
-  List<IsolateRef> isolateRefs;
 
   Stream get onStateChange => _stateController.stream;
 
@@ -65,7 +65,7 @@ class ServiceInfo {
       if (sdkVersion.contains(' ')) {
         sdkVersion = sdkVersion.substring(0, sdkVersion.indexOf(' '));
       }
-      isolateRefs = vm.isolates;
+      isolateManager.updateLiveIsolates(vm.isolates);
 
       //for (IsolateRef ref in vm.isolates) {
       //  _service.getIsolate(ref.id).then((Isolate isolate) {
@@ -139,5 +139,45 @@ class ServiceInfo {
     sdkVersion = null;
 
     _stateController.add(null);
+  }
+}
+
+class IsolateManager {
+  List<IsolateRef> _isolates = [];
+  IsolateRef _selectedIsolate;
+
+  final StreamController<List<IsolateRef>> _isolatesChangedController =
+      new StreamController.broadcast();
+  final StreamController<IsolateRef> _selectedIsolateController =
+      new StreamController.broadcast();
+
+  // TODO: immutable
+  List<IsolateRef> get isolates => new List.from(_isolates);
+
+  IsolateRef get selectedIsolate => _selectedIsolate;
+
+  Stream<List<IsolateRef>> get onIsolatesChanged =>
+      _isolatesChangedController.stream;
+
+  Stream<IsolateRef> get osSelectedIsolateChanged =>
+      _selectedIsolateController.stream;
+
+  void updateLiveIsolates(List<IsolateRef> isolates) {
+    // TODO: update these better
+    _isolates = isolates;
+    _isolatesChangedController.add(_isolates);
+
+    if (_selectedIsolate == null && isolates.isNotEmpty) {
+      _selectedIsolate = isolates
+          .firstWhere((ref) => ref.name.contains('main('), orElse: () => null);
+      if (_selectedIsolate == null) {
+        _selectedIsolate = isolates.first;
+      }
+      _selectedIsolateController.add(_selectedIsolate);
+    } else if (!isolates.contains(_selectedIsolateController)) {
+      // TODO: select a better next isolate
+      _selectedIsolate = isolates.isNotEmpty ? isolates.first : null;
+      _selectedIsolateController.add(_selectedIsolate);
+    }
   }
 }

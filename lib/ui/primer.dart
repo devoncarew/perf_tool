@@ -24,6 +24,10 @@ class PSelect extends CoreElement {
 
   String get value => (element as SelectElement).value;
 
+  set selectedIndex(int index) {
+    (element as SelectElement).selectedIndex = index;
+  }
+
   Stream<Event> get onChange => element.onChange.where((_) => !disabled);
 
   /// Subscribe to the [onChange] event stream with a no-arg handler.

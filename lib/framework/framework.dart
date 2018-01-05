@@ -8,20 +8,23 @@ import 'dart:html' hide Screen;
 import 'package:vm_service_lib/vm_service_lib.dart';
 
 import '../globals.dart';
-import '../perf_main.dart';
+import '../main.dart';
 import '../service.dart';
 import '../ui/elements.dart';
 import '../ui/primer.dart';
 
 class Framework {
-  List<Screen> screens = [];
+  final List<Screen> screens = [];
   Screen current;
-  _StatusLine _statusLine;
+  StatusLine globalStatus;
+  StatusLine pageStatus;
 
   Framework() {
     window.onPopState.listen(handlePopState);
-    _statusLine = new _StatusLine(
-        new CoreElement.from(querySelector('#rightStatusLine')));
+    globalStatus =
+        new StatusLine(new CoreElement.from(querySelector('#global-status')));
+    pageStatus =
+        new StatusLine(new CoreElement.from(querySelector('#page-status')));
   }
 
   void addScreen(Screen screen) {
@@ -56,6 +59,9 @@ class Framework {
     String first =
         (path.startsWith('/') ? path.substring(1) : path).split('/').first;
     Screen screen = getScreen(first.isEmpty ? path : first);
+    if (screen == null && path == '/') {
+      screen = screens.first;
+    }
     if (screen != null) {
       load(screen);
     } else {
@@ -101,7 +107,7 @@ class Framework {
   void load(Screen screen) {
     if (current != null) {
       current.exiting();
-      _statusLine.removeAll(current.statusItems);
+      pageStatus.removeAll();
       _contents[current] = mainElement.element.children.toList();
       mainElement.element.children.clear();
     } else {
@@ -117,18 +123,17 @@ class Framework {
     }
 
     current.entering();
-    _statusLine.addAll(current.statusItems);
+    pageStatus.addAll(current.statusItems);
 
     updatePage();
   }
 
   void updatePage() {
     // nav
-    for (Element element in querySelectorAll('header a')) {
+    for (Element element in querySelectorAll('#main-nav a')) {
       CoreElement e = new CoreElement.from(element);
       bool isCurrent = current.ref == element.attributes['href'];
-      e.enabled = !isCurrent;
-      element.classes.toggle('active', isCurrent);
+      e.toggleClass('active', isCurrent);
     }
 
     // status
@@ -166,38 +171,48 @@ class Framework {
   }
 }
 
-class _StatusLine {
+class StatusLine {
   final CoreElement element;
+  final List<StatusItem> _items = [];
 
-  _StatusLine(this.element);
+  StatusLine(this.element);
 
   void add(StatusItem item) {
-    SpanElement separator = new SpanElement()
-      ..text = '•'
-      ..classes.add('separator');
+    _items.add(item);
 
-    element.element.children.insert(0, separator);
-    element.element.children.insert(0, item.element.element);
+    _rebuild();
+  }
+
+  void _rebuild() {
+    element.clear();
+
+    if (_items.isNotEmpty) {
+      element.add(_items.first.element);
+
+      for (StatusItem item in _items.sublist(1)) {
+        element.add(new SpanElement()
+          ..text = '•'
+          ..classes.add('separator'));
+        element.add(item.element);
+      }
+    }
   }
 
   void remove(StatusItem item) {
-    int index = element.element.children.indexOf(item.element.element);
-    if (index >= 0) {
-      element.element.children.removeAt(index);
-      element.element.children.removeAt(index);
-    }
+    _items.remove(item);
+
+    _rebuild();
   }
 
   void addAll(List<StatusItem> items) {
-    for (StatusItem item in items.reversed) {
-      add(item);
-    }
+    _items.addAll(items);
+
+    _rebuild();
   }
 
-  void removeAll(List<StatusItem> items) {
-    for (StatusItem item in items) {
-      remove(item);
-    }
+  void removeAll() {
+    _items.clear();
+    _rebuild();
   }
 }
 
@@ -209,9 +224,11 @@ void toast(String message) {
 abstract class Screen {
   final String name;
   final String id;
+  final String iconClass;
+
   final List<StatusItem> statusItems = [];
 
-  Screen(this.name, this.id);
+  Screen(this.name, this.id, [this.iconClass]);
 
   String get ref => id == '/' ? id : '/$id';
 
@@ -221,6 +238,7 @@ abstract class Screen {
 
   void exiting() {}
 
+  // TODO: generalize this - global and page status items
   void addStatusItem(StatusItem item) {
     // TODO: If we're live, add to the screen
     statusItems.add(item);
@@ -234,6 +252,16 @@ abstract class Screen {
   HelpInfo get helpInfo => null;
 
   String toString() => id;
+}
+
+class SetStateMixin {
+  Timer timer;
+
+  void setState(Function rebuild) {
+    timer?.cancel();
+    // TODO: listen for rAFs instead
+    timer = new Timer(Duration.zero, rebuild);
+  }
 }
 
 class HelpInfo {

@@ -6,7 +6,7 @@ import '../framework/framework.dart';
 import '../ui/elements.dart';
 
 class TimelineScreen extends Screen {
-  TimelineScreen() : super('Timeline', 'timeline');
+  TimelineScreen() : super('Timeline', 'timeline', 'octicon-pulse');
 
   @override
   void createContent(Framework framework, CoreElement mainDiv) {
@@ -14,5 +14,5 @@ class TimelineScreen extends Screen {
   }
 
   HelpInfo get helpInfo =>
-      new HelpInfo('timeline view docs and tips', 'http://www.cheese.com');
+      new HelpInfo('timeline view', 'http://www.cheese.com');
 }

@@ -5,8 +5,8 @@
 import 'dart:async';
 import 'dart:html';
 
-import '../ui/elements.dart';
-import '../utils.dart';
+import 'ui/elements.dart';
+import 'utils.dart';
 
 class Table<T> {
   final CoreElement element;
@@ -44,8 +44,9 @@ class Table<T> {
       _thead = new CoreElement('thead')
         ..add(tr()
           ..add(columns.map((Column column) {
-            CoreElement s =
-                span(text: column.title, c: 'interactable sortable');
+            CoreElement s = span(
+                text: column.title,
+                c: 'interactable${column.supportsSorting ? ' sortable' : ''}');
             s.click(() => _columnClicked(column));
             spanForColumn[column] = s;
             CoreElement header = th(c: column.numeric ? 'right' : 'left')
@@ -63,10 +64,17 @@ class Table<T> {
     }
 
     if (_sortColumn == null) {
-      setSortColumn(columns.first);
+      Column column =
+          columns.firstWhere((c) => c.supportsSorting, orElse: () => null);
+      if (column != null) {
+        setSortColumn(column);
+      }
     }
 
-    _doSort();
+    if (_sortColumn != null) {
+      _doSort();
+    }
+
     _rebuildTable();
   }
 
@@ -168,6 +176,8 @@ class Table<T> {
   }
 
   void _columnClicked(Column<T> column) {
+    if (!column.supportsSorting) return;
+
     if (_sortColumn == column) {
       _sortDirection = _sortDirection == SortOrder.ascending
           ? SortOrder.descending
@@ -188,6 +198,8 @@ abstract class Column<T> {
   Column(this.title, {this.wide: false});
 
   bool get numeric => false;
+
+  bool get supportsSorting => false;
 
   bool get usesHtml => false;
 

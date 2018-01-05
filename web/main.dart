@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:perf_tool/perf_main.dart';
+import 'package:perf_tool/main.dart';
 
 // TODO: Do we care about the individual isolates?
 //       - for the timeline view, show info for all isolates
