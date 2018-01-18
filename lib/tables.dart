@@ -123,14 +123,16 @@ class Table<T> {
       CoreElement tableRow = tr();
 
       for (Column column in columns) {
+        String cssClass = column.cssClass;
+
         if (column.usesHtml) {
           tableRow.add(td(
-            c: column.numeric ? 'right' : null,
+            c: column.numeric ? 'right' : cssClass,
           )..setInnerHtml(column.render(column.getValue(row))));
         } else {
           tableRow.add(td(
             text: column.render(column.getValue(row)),
-            c: column.numeric ? 'right' : null,
+            c: column.numeric ? 'right' : cssClass,
           ));
         }
       }
@@ -197,14 +199,18 @@ abstract class Column<T> {
 
   Column(this.title, {this.wide: false});
 
+  String get cssClass => null;
+
   bool get numeric => false;
 
   bool get supportsSorting => false;
 
   bool get usesHtml => false;
 
+  /// Get the cell's value from the given [row].
   dynamic getValue(T row);
 
+  /// Given a value from [getValue], render it to a String.
   String render(dynamic value) {
     if (numeric) {
       return fastIntl(value);

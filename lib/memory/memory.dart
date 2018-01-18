@@ -65,7 +65,7 @@ elementum tellus turpis nec arcu; memory roots.'''),
     serviceInfo.isolateManager.onIsolatesChanged.listen((_) {
       isolateSelectSetState.setState(_rebuildIsolatesSelect);
     });
-    serviceInfo.isolateManager.osSelectedIsolateChanged.listen((_) {
+    serviceInfo.isolateManager.onSelectedIsolateChanged.listen((_) {
       isolateSelectSetState.setState(_rebuildIsolatesSelect);
     });
   }

@@ -84,6 +84,8 @@ class ServiceConnectionManager {
 
       onClosed.then((_) => vmServiceClosed());
 
+      service.streamListen('Stdout');
+      service.streamListen('Stderr');
       service.streamListen('VM');
       service.streamListen('Isolate');
       service.streamListen('Debug');
@@ -91,6 +93,7 @@ class ServiceConnectionManager {
       service.streamListen('Timeline');
       service.streamListen('Extension');
       service.streamListen('_Graph');
+      service.streamListen('_Logging');
 
       service.onGCEvent.listen((Event event) => print(event.json));
       service.onIsolateEvent.listen(print);
@@ -100,11 +103,11 @@ class ServiceConnectionManager {
         if (e.extensionKind == 'Flutter.Frame') {
           ExtensionData data = e.extensionData;
 
-          int frameNumber = data.data['frameNumber'];
-          //int startTimeMicros = data.data['startTime'];
+          // {number: 185, startTime: 12942276949, elapsed: 18503}
+          int number = data.data['number'];
           int elapsedMicros = data.data['elapsed'];
 
-          print('[frame $frameNumber] ${(elapsedMicros / 1000.0)
+          print('[frame $number] ${(elapsedMicros / 1000.0)
               .toStringAsFixed(1)
               .padLeft(4)}ms');
         }
@@ -156,10 +159,19 @@ class IsolateManager {
 
   IsolateRef get selectedIsolate => _selectedIsolate;
 
+  void selectIsolate(String isolateRefId) {
+    IsolateRef ref =
+        _isolates.firstWhere((r) => r.id == isolateRefId, orElse: () => null);
+    if (ref != _selectedIsolate) {
+      _selectedIsolate = ref;
+      _selectedIsolateController.add(_selectedIsolate);
+    }
+  }
+
   Stream<List<IsolateRef>> get onIsolatesChanged =>
       _isolatesChangedController.stream;
 
-  Stream<IsolateRef> get osSelectedIsolateChanged =>
+  Stream<IsolateRef> get onSelectedIsolateChanged =>
       _selectedIsolateController.stream;
 
   void updateLiveIsolates(List<IsolateRef> isolates) {

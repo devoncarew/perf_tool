@@ -85,6 +85,19 @@ td.pre {
     white-space: pre;
 }
 
+td.pre-wrap {
+    white-space: pre-wrap;    
+}
+
+td.monospace {
+    font-family: monospace;
+    font-size: 0.95em;
+}
+
+span.label {
+    background-color: #616161;
+}
+
 table thead {
     background-color: #f3f3f3;
     border-bottom: 1px solid #dfe2e5;
