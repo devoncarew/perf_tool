@@ -14,5 +14,5 @@ class TimelineScreen extends Screen {
   }
 
   HelpInfo get helpInfo =>
-      new HelpInfo('timeline view', 'http://www.cheese.com');
+      new HelpInfo('timeline docs', 'http://www.cheese.com');
 }

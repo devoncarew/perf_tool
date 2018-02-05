@@ -108,7 +108,6 @@ class PerfToolFramework extends Framework {
       );
       deviceStatus.element.add([
         span(c: 'octicon octicon-device-mobile'),
-        span(text: ' ${serviceInfo.targetCpu}'),
       ]);
     } else {
       PTooltip.remove(deviceStatus.element);

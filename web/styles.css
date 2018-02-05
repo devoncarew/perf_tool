@@ -14,9 +14,11 @@ body {
     font-size: 14px;
 }
 
-/*.container {
-    width: 1060px;
-}*/
+.container {
+    width: initial;
+    margin-right: 30px;
+    margin-left: 30px;
+}
 
 .masthead {
     padding: 16px 20px;
@@ -91,7 +93,6 @@ td.pre-wrap {
 
 td.monospace {
     font-family: monospace;
-    font-size: 0.95em;
 }
 
 span.label {
@@ -202,7 +203,7 @@ form[horizontal] {
 }
 
 .footer {
-    padding: 10px 20px;
+    padding: 10px 30px;
     margin-top: 20px;
     color: #7a7a7a;
     border-top: 1px solid #eee;

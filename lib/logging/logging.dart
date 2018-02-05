@@ -70,7 +70,7 @@ class LoggingScreen extends Screen {
   }
 
   HelpInfo get helpInfo =>
-      new HelpInfo('logging & events', 'http://www.cheese.com');
+      new HelpInfo('logging & events docs', 'http://www.cheese.com');
 
   void _startLogging() {
     if (ref == null) return;
@@ -208,7 +208,7 @@ class LogWhenColumn extends Column<LogData> {
 
   LogWhenColumn() : super('When');
 
-  String get cssClass => 'pre right';
+  String get cssClass => 'pre monospace';
 
   bool get supportsSorting => false;
 

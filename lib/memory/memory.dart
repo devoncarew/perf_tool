@@ -21,8 +21,6 @@ class MemoryScreen extends Screen {
   Table<MemoryRow> memoryTable;
   Framework framework;
 
-  PSelect isolateSelect;
-  SetStateMixin isolateSelectSetState;
   MemoryScreen() : super('Memory', 'memory', 'octicon-package');
 
   @override
@@ -32,18 +30,11 @@ class MemoryScreen extends Screen {
     mainDiv.add([
       chartDiv(),
       div(c: 'section'),
-      div(c: 'section')..setInnerHtml('''<b>Lorem ipsum dolor sit amet</b>,
-consectetur adipiscing elit. Donec faucibus dolor quis rhoncus feugiat. Ut imperdiet
-libero vel vestibulum vulputate. Aliquam consequat, lectus nec euismod commodo, turpis massa volutpat ex, a
-elementum tellus turpis nec arcu; memory roots.'''),
       div(c: 'section')
         ..add([
           form()
             ..layoutHorizontal()
             ..add([
-              isolateSelect = select()
-                ..small()
-                ..change(_handleIsolateSelect),
               loadSnapshotButton = new PButton('Load heap snapshot')
                 ..small()
                 ..primary()
@@ -58,26 +49,10 @@ elementum tellus turpis nec arcu; memory roots.'''),
       _createTableView()..clazz('section'),
     ]);
 
-    isolateSelectSetState = new SetStateMixin();
-    isolateSelectSetState.setState(_rebuildIsolatesSelect);
-
     // TODO: don't rebuild until the component is active
-    serviceInfo.isolateManager.onIsolatesChanged.listen((_) {
-      isolateSelectSetState.setState(_rebuildIsolatesSelect);
-    });
     serviceInfo.isolateManager.onSelectedIsolateChanged.listen((_) {
-      isolateSelectSetState.setState(_rebuildIsolatesSelect);
+      _handleIsolateChanged();
     });
-  }
-
-  void _rebuildIsolatesSelect() {
-    isolateSelect.clear();
-    serviceInfo.isolateManager.isolates.forEach(
-        (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
-    if (serviceInfo.isolateManager.selectedIsolate != null) {
-      isolateSelect.selectedIndex = serviceInfo.isolateManager.isolates
-          .indexOf(serviceInfo.isolateManager.selectedIsolate);
-    }
   }
 
   void _doGC() {
@@ -93,11 +68,11 @@ elementum tellus turpis nec arcu; memory roots.'''),
     });
   }
 
-  void _handleIsolateSelect() {
+  void _handleIsolateChanged() {
     // TODO: update buttons
   }
 
-  String get _isolateId => isolateSelect.value;
+  String get _isolateId => serviceInfo.isolateManager.selectedIsolate.id;
 
   void _loadSnapshot() {
     List<Event> events = [];
@@ -197,7 +172,8 @@ elementum tellus turpis nec arcu; memory roots.'''),
     return memoryTable.element;
   }
 
-  HelpInfo get helpInfo => new HelpInfo('memory view', 'http://www.cheese.com');
+  HelpInfo get helpInfo =>
+      new HelpInfo('memory view docs', 'http://www.cheese.com');
 }
 
 class MemoryRow {

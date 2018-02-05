@@ -21,7 +21,6 @@ class PerformanceScreen extends Screen {
 
   PButton loadSnapshotButton;
   PButton resetButton;
-  PSelect isolateSelect;
   CoreElement progressElement;
   Table<PerfData> perfTable;
   Framework framework;
@@ -44,18 +43,11 @@ class PerformanceScreen extends Screen {
     mainDiv.add([
       chartDiv(),
       div(c: 'section'),
-      div(c: 'section')..setInnerHtml('''<b>Lorem ipsum dolor sit amet</b>,
-consectetur adipiscing elit. Donec faucibus dolor quis rhoncus feugiat. Ut imperdiet
-libero vel vestibulum vulputate. Aliquam consequat, lectus nec euismod commodo, turpis massa volutpat ex, a
-elementum tellus turpis nec arcu.'''),
       div(c: 'section')
         ..add([
           form()
             ..layoutHorizontal()
             ..add([
-              isolateSelect = select()
-                ..small()
-                ..change(_handleIsolateSelect),
               loadSnapshotButton = new PButton('Load snapshot')
                 ..small()
                 ..primary()
@@ -72,19 +64,16 @@ elementum tellus turpis nec arcu.'''),
 
     _updateStatus(null);
 
-    isolateSelect.clear();
-
-    if (serviceInfo.isolateManager.isolates != null) {
-      serviceInfo.isolateManager.isolates.forEach(
-          (ref) => isolateSelect.option(isolateName(ref), value: ref.id));
-    }
+    serviceInfo.isolateManager.onSelectedIsolateChanged.listen((_) {
+      _handleIsolateChanged();
+    });
   }
 
-  void _handleIsolateSelect() {
+  void _handleIsolateChanged() {
     // TODO: update buttons
   }
 
-  String get _isolateId => isolateSelect.value;
+  String get _isolateId => serviceInfo.isolateManager.selectedIsolate.id;
 
   void _loadSnapshot() {
     loadSnapshotButton.disabled = true;
@@ -138,7 +127,7 @@ elementum tellus turpis nec arcu.'''),
 
       LineChart chart = new LineChart(d.element);
       chart.draw(data, options: {
-        'chartArea': {'left': 35, 'right': 90, 'top': 12, 'bottom': 20},
+        'chartArea': {'left': 35, 'right': 100, 'top': 12, 'bottom': 20},
         'vAxis': {
           'viewWindow': {'min': 0, 'max': 100}
         }
@@ -189,7 +178,7 @@ elementum tellus turpis nec arcu.'''),
   }
 
   HelpInfo get helpInfo =>
-      new HelpInfo('performance view', 'http://www.cheese.com');
+      new HelpInfo('performance view docs', 'http://www.cheese.com');
 
   void _process(CpuProfile profile) {
     perfTable.setRows(
