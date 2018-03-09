@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -41,7 +42,7 @@ String getLoremFragment([int wordCount]) {
           .join(' '));
 }
 
-String escape(String text) => text == null ? '' : HTML_ESCAPE.convert(text);
+String escape(String text) => text == null ? '' : htmlEscape.convert(text);
 
 final NumberFormat nf = new NumberFormat.decimalPattern();
 
@@ -70,4 +71,22 @@ String funcRefName(FuncRef ref) {
   } else {
     return ref.name;
   }
+}
+
+class Property<T> {
+  final StreamController<T> _changeController = new StreamController.broadcast();
+  T _value;
+
+  Property(this._value);
+
+  T get value => _value;
+
+  set value(T newValue) {
+    if (newValue != _value) {
+      _value = newValue;
+      _changeController.add(newValue);
+    }
+  }
+
+  Stream<T> get onValueChange => _changeController.stream;
 }

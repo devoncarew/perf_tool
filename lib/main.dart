@@ -6,6 +6,7 @@ import 'dart:html' hide Screen;
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
+import 'device/device.dart';
 import 'framework/framework.dart';
 import 'globals.dart';
 import 'logging/logging.dart';
@@ -19,14 +20,12 @@ import 'utils.dart';
 
 // TODO: notification when the debug process goes away
 
-// TODO: isolate control to the status line
+// TODO: make the screens more robust through restarts
 
-// TODO: page notification of isolate changes
-
-// TODO: a sense of whether a page is active or not
+// TODO: make the screens gather info when not the active screen, and refresh
+//       the UI on re-activate
 
 class PerfToolFramework extends Framework {
-  StatusItem deviceStatus;
   StatusItem isolateSelectStatus;
   PSelect isolateSelect;
 
@@ -36,6 +35,7 @@ class PerfToolFramework extends Framework {
     addScreen(new MemoryScreen());
     addScreen(new PerformanceScreen());
     addScreen(new TimelineScreen());
+    addScreen(new DeviceScreen());
     addScreen(new LoggingScreen());
 
     initGlobalUI();
@@ -44,6 +44,7 @@ class PerfToolFramework extends Framework {
   void initGlobalUI() {
     CoreElement mainNav = new CoreElement.from(querySelector('#main-nav'));
     mainNav.clear();
+
     for (Screen screen in screens) {
       CoreElement link = new CoreElement('a')
         ..attributes['href'] = screen.ref
@@ -56,6 +57,12 @@ class PerfToolFramework extends Framework {
           span(text: ' ${screen.name}')
         ]);
       mainNav.add(link);
+      if (!screen.visible) {
+        link.disabled = true;
+      }
+      screen.onVisibleChange.listen((_) {
+        link.disabled = !screen.visible;
+      });
     }
 
     // TODO: isolate selector should use the rich pulldown UI
@@ -66,17 +73,10 @@ class PerfToolFramework extends Framework {
       ..change(_handleIsolateSelect);
     isolateSelectStatus.element.add(isolateSelect);
     _rebuildIsolateSelect();
-    serviceInfo.isolateManager.onIsolatesChanged.listen(_rebuildIsolateSelect);
+    serviceInfo.isolateManager.onIsolateCreated.listen(_rebuildIsolateSelect);
+    serviceInfo.isolateManager.onIsolateExited.listen(_rebuildIsolateSelect);
     serviceInfo.isolateManager.onSelectedIsolateChanged
         .listen(_rebuildIsolateSelect);
-
-    // device status
-    deviceStatus = new StatusItem();
-    globalStatus.add(deviceStatus);
-    _updateDeviceStatus(deviceStatus);
-    serviceInfo.onStateChange.listen((_) {
-      _updateDeviceStatus(deviceStatus);
-    });
   }
 
   IsolateRef get currentIsolate => serviceInfo.isolateManager.selectedIsolate;
@@ -94,27 +94,6 @@ class PerfToolFramework extends Framework {
     if (serviceInfo.isolateManager.selectedIsolate != null) {
       isolateSelect.selectedIndex = serviceInfo.isolateManager.isolates
           .indexOf(serviceInfo.isolateManager.selectedIsolate);
-    }
-  }
-
-  void _updateDeviceStatus(StatusItem deviceStatus) {
-    deviceStatus.element.clear();
-
-    if (serviceInfo.service != null) {
-      PTooltip.add(
-        deviceStatus.element,
-        '${serviceInfo.hostCPU} • ${serviceInfo.targetCpu}\n'
-            'SDK ${serviceInfo.sdkVersion}',
-      );
-      deviceStatus.element.add([
-        span(c: 'octicon octicon-device-mobile'),
-      ]);
-    } else {
-      PTooltip.remove(deviceStatus.element);
-
-      deviceStatus.element.add([
-        span(text: ' no device connected'),
-      ]);
     }
   }
 }

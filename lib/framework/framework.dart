@@ -12,6 +12,7 @@ import '../main.dart';
 import '../service.dart';
 import '../ui/elements.dart';
 import '../ui/primer.dart';
+import '../utils.dart';
 
 class Framework {
   final List<Screen> screens = [];
@@ -80,7 +81,7 @@ class Framework {
       }
     }
 
-    port ??= int.parse(window.location.port);
+    port ??= 8100; //int.parse(window.location.port);
 
     Completer finishedCompleter = new Completer();
 
@@ -226,11 +227,21 @@ abstract class Screen {
   final String id;
   final String iconClass;
 
+  final Property<bool> _visible = new Property(true);
+
   final List<StatusItem> statusItems = [];
 
   Screen(this.name, this.id, [this.iconClass]);
 
   String get ref => id == '/' ? id : '/$id';
+
+  bool get visible => _visible.value;
+
+  set visible(bool value) {
+    _visible.value = value;
+  }
+
+  Stream<bool> get onVisibleChange => _visible.onValueChange;
 
   void createContent(Framework framework, CoreElement mainDiv) {}
 

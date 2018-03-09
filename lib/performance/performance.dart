@@ -7,7 +7,7 @@ import 'dart:math' as math;
 
 import 'package:vm_service_lib/vm_service_lib.dart';
 
-import '../charts.dart';
+import '../charts/charts.dart';
 import '../framework/framework.dart';
 import '../globals.dart';
 import '../tables.dart';
@@ -25,6 +25,10 @@ class PerformanceScreen extends Screen {
   Table<PerfData> perfTable;
   Framework framework;
 
+  CpuChart cpuChart;
+  SetStateMixin cpuChartStateMixin = new SetStateMixin();
+  CpuTracker cpuTracker;
+
   PerformanceScreen()
       : super('Performance', 'performance', 'octicon-dashboard') {
     sampleCountStatus = new StatusItem();
@@ -41,7 +45,7 @@ class PerformanceScreen extends Screen {
     this.framework = framework;
 
     mainDiv.add([
-      chartDiv(),
+      createLiveChartArea(),
       div(c: 'section'),
       div(c: 'section')
         ..add([
@@ -51,7 +55,6 @@ class PerformanceScreen extends Screen {
               loadSnapshotButton = new PButton('Load snapshot')
                 ..small()
                 ..primary()
-                ..clazz('margin-left')
                 ..click(_loadSnapshot),
               progressElement = span(c: 'margin-left text-gray')..flex(),
               resetButton = new PButton('Reset VM counters')
@@ -67,6 +70,12 @@ class PerformanceScreen extends Screen {
     serviceInfo.isolateManager.onSelectedIsolateChanged.listen((_) {
       _handleIsolateChanged();
     });
+
+    serviceInfo.onConnectionAvailable.listen(_handleConnectionStart);
+    if (serviceInfo.hasConnection) {
+      _handleConnectionStart(serviceInfo.service);
+    }
+    serviceInfo.onConnectionClosed.listen(_handleConnectionStop);
   }
 
   void _handleIsolateChanged() {
@@ -98,6 +107,14 @@ class PerformanceScreen extends Screen {
     });
   }
 
+  CoreElement createLiveChartArea() {
+    CoreElement container = div(c: 'section perf-chart table-border')
+      ..layoutVertical();
+    cpuChart = new CpuChart(container);
+    cpuChart.disabled = true;
+    return container;
+  }
+
   void _reset() {
     resetButton.disabled = true;
 
@@ -108,37 +125,6 @@ class PerformanceScreen extends Screen {
     }).whenComplete(() {
       resetButton.disabled = false;
     });
-  }
-
-  CoreElement chartDiv() {
-    CoreElement d = div(c: 'perf-chart section');
-
-    // TODO: clean up
-    LineChart.initChartLibrary().then((_) {
-      DataTable data = new DataTable();
-      data.addColumn('number', 'X');
-      data.addColumn('number', 'CPU');
-      int value = 30;
-      data.addRows(new List.generate(400, (i) {
-        value += (r.nextInt(7) - 3);
-        value = math.max(0, math.min(100, value));
-        return [i, value];
-      }));
-
-      LineChart chart = new LineChart(d.element);
-      chart.draw(data, options: {
-        'chartArea': {'left': 35, 'right': 100, 'top': 12, 'bottom': 20},
-        'vAxis': {
-          'viewWindow': {'min': 0, 'max': 100}
-        }
-      });
-      // ticks: [0, 25, 50, 75, 100] // display labels every 25
-    }).catchError((e) {
-      print('charting library not available');
-      d.toggleClass('error');
-    });
-
-    return d;
   }
 
   CoreElement _createTableView() {
@@ -191,6 +177,118 @@ class PerformanceScreen extends Screen {
         f.inclusiveTicks / count,
       );
     })));
+  }
+
+  void _handleConnectionStart(VmService service) {
+    cpuChart.disabled = false;
+
+    cpuTracker = new CpuTracker(service);
+    cpuTracker.start();
+
+    cpuTracker.onChange.listen((_) {
+      cpuChartStateMixin.setState(() {
+        cpuChart.updateFrom(cpuTracker);
+      });
+    });
+  }
+
+  void _handleConnectionStop(dynamic event) {
+    cpuChart.disabled = true;
+
+    cpuTracker?.stop();
+  }
+}
+
+class CpuChart extends LineChart<CpuTracker> {
+  CoreElement usageLabel;
+
+  CpuChart(CoreElement parent) : super(parent) {
+    usageLabel = parent.add(div(c: 'perf-label'));
+    usageLabel.element.style.right = '0';
+  }
+
+  void updateFrom(CpuTracker tracker) {
+    if (tracker.samples.isEmpty || dim == null) {
+      // TODO:
+      return;
+    }
+
+    // display the cpu usage
+    usageLabel.text = '${tracker._lastValue}%';
+
+    // re-render the svg
+    final int hRange = CpuTracker.kMaxGraphTime.inSeconds;
+    const int vRange = 100;
+
+    chartElement.setInnerHtml('''
+<svg viewBox="0 0 0 0 ${dim.x} ${dim.y}" preserveAspectRatio="none">
+<polyline
+    fill="none"
+    stroke="#0074d9"
+    stroke-width="3"
+    points="${createPoints(tracker.samples, hRange, vRange)}"/>
+</svg>
+''');
+  }
+
+  String createPoints(List<int> samples, int hRange, int vRange) {
+    // 0,120 20,60 40,80 60,20
+    List<String> coords = [];
+    int pos = 0;
+    for (int i = samples.length - 1; i >= 0; i--) {
+      final int x = dim.x - (pos * dim.x ~/ hRange);
+      final int y = dim.y - (samples[i] * dim.y ~/ vRange);
+      coords.add('${x},${y}');
+      pos++;
+    }
+    return coords.join(' ');
+  }
+}
+
+class CpuTracker {
+  static const Duration kMaxGraphTime = const Duration(minutes: 1);
+  static const Duration kUpdateDelay = const Duration(seconds: 1);
+
+  static final math.Random rnd = new math.Random();
+
+  VmService service;
+  Timer _pollingTimer;
+  final StreamController _changeController = new StreamController.broadcast();
+  List<int> samples = [];
+
+  CpuTracker(this.service);
+
+  bool get hasConnection => service != null;
+
+  Stream get onChange => _changeController.stream;
+
+  void start() {
+    _pollingTimer = new Timer(const Duration(milliseconds: 100), _pollCpu);
+  }
+
+  void _pollCpu() {
+    if (!hasConnection) return;
+
+    _addSample(clamp((_lastValue ?? 50) + rnd.nextInt(20) - 10, 0, 100));
+
+    _pollingTimer = new Timer(kUpdateDelay, _pollCpu);
+  }
+
+  void stop() {
+    _pollingTimer?.cancel();
+    service = null;
+  }
+
+  int get _lastValue => samples.isEmpty ? null : samples.last;
+
+  void _addSample(int sample) {
+    samples.add(sample);
+
+    while (samples.length > (kMaxGraphTime.inSeconds + 2)) {
+      samples.removeAt(0);
+    }
+
+    _changeController.add(null);
   }
 }
 
@@ -290,3 +388,9 @@ tries['inclusiveFunctionTrie'] =
     new Uint32List.fromList(profile['inclusiveFunctionTrie']);
 
 */
+
+int clamp(int value, int min, int max) {
+  if (value < min) return min;
+  if (value > max) return max;
+  return value;
+}

@@ -45,6 +45,10 @@ Future<VmService> connect(String host, int port, Completer finishedCompleter) {
 
 class ServiceConnectionManager {
   final StreamController _stateController = new StreamController.broadcast();
+  final StreamController<VmService> _connectionAvailableController =
+      new StreamController.broadcast();
+  final StreamController _connectionClosedController =
+      new StreamController.broadcast();
   final IsolateManager isolateManager = new IsolateManager();
 
   VmService service;
@@ -52,7 +56,14 @@ class ServiceConnectionManager {
   String hostCPU;
   String sdkVersion;
 
+  bool get hasConnection => service != null;
+
   Stream get onStateChange => _stateController.stream;
+
+  Stream<VmService> get onConnectionAvailable =>
+      _connectionAvailableController.stream;
+
+  Stream get onConnectionClosed => _connectionClosedController.stream;
 
   void vmServiceOpened(VmService _service, Future onClosed) {
     //_service.onSend.listen((s) => print('==> $s'));
@@ -65,22 +76,14 @@ class ServiceConnectionManager {
       if (sdkVersion.contains(' ')) {
         sdkVersion = sdkVersion.substring(0, sdkVersion.indexOf(' '));
       }
-      isolateManager.updateLiveIsolates(vm.isolates);
-
-      //for (IsolateRef ref in vm.isolates) {
-      //  _service.getIsolate(ref.id).then((Isolate isolate) {
-      //    print(isolate.extensionRPCs);
-      //  });
-      //}
-
-      print(vm.hostCPU);
-      print(vm.version);
-
-      // TODO: listen for isolate changes - fire events
 
       this.service = _service;
 
       _stateController.add(null);
+      _connectionAvailableController.add(service);
+
+      isolateManager._initIsolates(vm.isolates);
+      service.onIsolateEvent.listen(isolateManager._handleIsolateEvent);
 
       onClosed.then((_) => vmServiceClosed());
 
@@ -95,38 +98,12 @@ class ServiceConnectionManager {
       service.streamListen('_Graph');
       service.streamListen('_Logging');
 
-      service.onGCEvent.listen((Event event) => print(event.json));
-      service.onIsolateEvent.listen(print);
+      // TODO:
       service.onEvent('Timeline').listen(print);
 
-      service.onExtensionEvent.listen((Event e) {
-        if (e.extensionKind == 'Flutter.Frame') {
-          ExtensionData data = e.extensionData;
-
-          // {number: 185, startTime: 12942276949, elapsed: 18503}
-          int number = data.data['number'];
-          int elapsedMicros = data.data['elapsed'];
-
-          print('[frame $number] ${(elapsedMicros / 1000.0)
-              .toStringAsFixed(1)
-              .padLeft(4)}ms');
-        }
-      });
-
-      //service.getIsolate(isolateRefs.last.id).then((Isolate isolate) {
-      //  print(isolate);
-      //});
-
-      //service
-      //    .requestHeapSnapshot(isolateRefs.last.id, 'User', true)
-      //    .then(print)
-      //    .catchError(print);
-
-      //service
-      //    .getCpuProfile(isolateRefs.last.id, 'VMUser')
-      //    .then((CpuProfile response) {
-      //  print(response);
-      //});
+      isolateManager.onIsolateCreated.listen(print);
+      isolateManager.onSelectedIsolateChanged.listen(print);
+      isolateManager.onIsolateExited.listen(print);
     }).catchError((e) {
       // TODO:
       print(e);
@@ -134,14 +111,13 @@ class ServiceConnectionManager {
   }
 
   void vmServiceClosed() {
-    print('service connection closed');
-
     service = null;
     targetCpu = null;
     hostCPU = null;
     sdkVersion = null;
 
     _stateController.add(null);
+    _connectionClosedController.add(null);
   }
 }
 
@@ -149,13 +125,15 @@ class IsolateManager {
   List<IsolateRef> _isolates = [];
   IsolateRef _selectedIsolate;
 
-  final StreamController<List<IsolateRef>> _isolatesChangedController =
+  final StreamController<IsolateRef> _isolateCreatedController =
       new StreamController.broadcast();
+  final StreamController<IsolateRef> _isolateExitedController =
+      new StreamController.broadcast();
+
   final StreamController<IsolateRef> _selectedIsolateController =
       new StreamController.broadcast();
 
-  // TODO: immutable
-  List<IsolateRef> get isolates => new List.from(_isolates);
+  List<IsolateRef> get isolates => new List.unmodifiable(_isolates);
 
   IsolateRef get selectedIsolate => _selectedIsolate;
 
@@ -168,28 +146,38 @@ class IsolateManager {
     }
   }
 
-  Stream<List<IsolateRef>> get onIsolatesChanged =>
-      _isolatesChangedController.stream;
+  Stream<IsolateRef> get onIsolateCreated => _isolateCreatedController.stream;
 
   Stream<IsolateRef> get onSelectedIsolateChanged =>
       _selectedIsolateController.stream;
 
-  void updateLiveIsolates(List<IsolateRef> isolates) {
-    // TODO: update these better
-    _isolates = isolates;
-    _isolatesChangedController.add(_isolates);
+  Stream<IsolateRef> get onIsolateExited => _isolateExitedController.stream;
 
-    if (_selectedIsolate == null && isolates.isNotEmpty) {
-      _selectedIsolate = isolates
-          .firstWhere((ref) => ref.name.contains('main('), orElse: () => null);
+  void _initIsolates(List<IsolateRef> isolates) {
+    _isolates = isolates;
+    _selectedIsolate = isolates.isNotEmpty ? isolates.first : null;
+
+    if (_selectedIsolate != null) {
+      _isolateCreatedController.add(_selectedIsolate);
+      _selectedIsolateController.add(_selectedIsolate);
+    }
+  }
+
+  void _handleIsolateEvent(Event event) {
+    if (event.kind == 'IsolateStart') {
+      _isolates.add(event.isolate);
+      _isolateCreatedController.add(event.isolate);
       if (_selectedIsolate == null) {
-        _selectedIsolate = isolates.first;
+        _selectedIsolate = event.isolate;
+        _selectedIsolateController.add(event.isolate);
       }
-      _selectedIsolateController.add(_selectedIsolate);
-    } else if (!isolates.contains(_selectedIsolateController)) {
-      // TODO: select a better next isolate
-      _selectedIsolate = isolates.isNotEmpty ? isolates.first : null;
-      _selectedIsolateController.add(_selectedIsolate);
+    } else if (event.kind == 'IsolateExit') {
+      _isolates.remove(event.isolate);
+      _isolateExitedController.add(event.isolate);
+      if (_selectedIsolate == event.isolate) {
+        _selectedIsolate = _isolates.isEmpty ? null : _isolates.first;
+        _selectedIsolateController.add(_selectedIsolate);
+      }
     }
   }
 }
