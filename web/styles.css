@@ -40,7 +40,7 @@ body {
 }
 
 .masthead-nav a:not(:last-child) {
-    margin-right: 1.25rem;
+    margin-right: 15px;
 }
 
 .masthead .mega-octicon {
@@ -176,6 +176,17 @@ table tr.selected {
    border: 1px solid #dfe2e5;
 }
 
+.frame-bar {
+    background: #4078c0;
+    height: 12px;
+    display: inline-block;
+    border-radius: 1px;
+}
+
+.frame-bar.over-budget {
+    background: #f97c7c;
+}
+
 form[horizontal] {
     align-items: baseline;
 }
@@ -250,8 +261,20 @@ form[horizontal] {
   margin-top: 10px;
 }
 
+.section .title {
+    padding-top: 0.3em;
+    margin-bottom: 0.2em;
+    font-size: 1.2em;
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+}
+
+.form-checkbox {
+    user-select: none;
+}
+
 .margin-left {
-    margin-left: 4px;
+    margin-left: 8px;
 }
 
 .margin-right {
@@ -259,21 +282,26 @@ form[horizontal] {
 }
 
 .perf-chart {
-  height: 140px;
-  /*width: 720px;*/
-  /*margin-left: auto;*/
-  /*margin-right: auto;*/
+  height: 100px;
 
   flex: none;
 }
 
-.perf-chart.error {
-  background: #ffb9b3;
+.perf-chart[disabled] {
+  background: #ddd;
+  opacity: 0.5;
 }
 
-.perf-table {
-
+.perf-chart .perf-label {
+    padding: 4px 8px;
+    position: absolute;
+    bottom: 0;
+    color: #7a7a7a;
 }
+
+/* .perf-table {
+
+} */
 
 span.function-kind {
     background: #888;
@@ -304,4 +332,26 @@ a[disabled] {
 
 .masthead a[disabled]:hover {
     color: rgba(255, 255, 255, 0.5);
+}
+
+.progress-element {
+    width: 200px;
+    height: 16px;
+    background: #ccc;
+    border-radius: 1px;
+    position: relative;
+    display: inline-block;
+}
+
+.progress-element .complete {
+    background: #4078c0;
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+form.align-items-center {
+    align-items: center;
 }

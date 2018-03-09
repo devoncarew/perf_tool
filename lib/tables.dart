@@ -203,7 +203,7 @@ abstract class Column<T> {
 
   bool get numeric => false;
 
-  bool get supportsSorting => false;
+  bool get supportsSorting => numeric;
 
   bool get usesHtml => false;
 

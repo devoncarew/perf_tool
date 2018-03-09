@@ -3,23 +3,31 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:intl/intl.dart';
+import 'package:logging/logging.dart';
 import 'package:vm_service_lib/vm_service_lib.dart';
 
 import '../framework/framework.dart';
 import '../globals.dart';
 import '../tables.dart';
+import '../timeline/timeline.dart';
 import '../ui/elements.dart';
 import '../utils.dart';
 
 // TODO: inspect calls
+
 // TODO: filtering, and enabling additional logging
-// TODO: cap the number of displayed items to n
-// TODO: a more efficient table
+
+// TODO: a more efficient table; we need to virtualize it
+
+// TODO: don't update DOM when we're not active; update once we return
+
+const int kMaxLogItemsLength = 40;
 
 class LoggingScreen extends Screen {
   Framework framework;
-  Table<LogData> memoryTable;
+  Table<LogData> loggingTable;
   StatusItem logCountStatus;
+  SetStateMixin loggingStateMixin = new SetStateMixin();
 
   LoggingScreen() : super('Logging', 'logging', 'octicon-clippy') {
     logCountStatus = new StatusItem();
@@ -32,53 +40,45 @@ class LoggingScreen extends Screen {
     this.framework = framework;
 
     mainDiv.add([
-      // div(c: 'section')
-      //   ..add([
-      //     form()
-      //       ..layoutHorizontal()
-      //       ..add([
-      //         div()..flex(),
-      //         new PButton('Add new log items')
-      //           ..small()
-      //           ..click(_addMoreRows),
-      //       ])
-      //   ]),
       _createTableView()..clazz('section'),
     ]);
 
-    // TODO: we need an event when the vm is connected and ready
-    _startLogging();
+    serviceInfo.onConnectionAvailable.listen(_handleConnectionStart);
+    if (serviceInfo.hasConnection) {
+      _handleConnectionStart(serviceInfo.service);
+    }
+    serviceInfo.onConnectionClosed.listen(_handleConnectionStop);
   }
 
   CoreElement _createTableView() {
-    memoryTable = new Table<LogData>();
+    loggingTable = new Table<LogData>();
 
-    memoryTable.addColumn(new LogWhenColumn());
-    memoryTable.addColumn(new LogKindColumn());
-    memoryTable.addColumn(new LogMessageColumn());
+    loggingTable.addColumn(new LogWhenColumn());
+    loggingTable.addColumn(new LogKindColumn());
+    loggingTable.addColumn(new LogMessageColumn());
 
-    memoryTable.setRows([]);
+    loggingTable.setRows([]);
 
     _updateStatus();
 
-    return memoryTable.element;
+    return loggingTable.element;
   }
 
   void _updateStatus() {
-    int count = memoryTable.rows.length;
+    int count = loggingTable.rows.length;
     logCountStatus.element.text = '${nf.format(count)} items';
   }
 
   HelpInfo get helpInfo =>
       new HelpInfo('logging & events docs', 'http://www.cheese.com');
 
-  void _startLogging() {
+  void _handleConnectionStart(VmService service) {
     if (ref == null) return;
 
     // TODO: inspect, ...
 
     // Log stdout and stderr events.
-    serviceInfo.service.onStdoutEvent.listen((Event e) {
+    service.onStdoutEvent.listen((Event e) {
       String message = decodeBase64(e.bytes);
       // TODO: Have the UI provide a way to show untruncated data.
       if (message.length > 500) {
@@ -86,13 +86,13 @@ class LoggingScreen extends Screen {
       }
       _log(new LogData('stdout', message, e.timestamp));
     });
-    serviceInfo.service.onStderrEvent.listen((Event e) {
+    service.onStderrEvent.listen((Event e) {
       String message = decodeBase64(e.bytes);
-      _log(new LogData('stderr', message, e.timestamp));
+      _log(new LogData('stderr', message, e.timestamp, error: true));
     });
 
     // Log GC events.
-    serviceInfo.service.onGCEvent.listen((Event e) {
+    service.onGCEvent.listen((Event e) {
       dynamic json = e.json;
       String message = 'gc reason: ${json['reason']}\n'
           'new: ${json['new']}\n'
@@ -101,7 +101,7 @@ class LoggingScreen extends Screen {
     });
 
     // Log `dart:developer` `log` events.
-    serviceInfo.service.onEvent('_Logging').listen((Event e) {
+    service.onEvent('_Logging').listen((Event e) {
       dynamic logRecord = e.json['logRecord'];
 
       String loggerName = _valueAsString(logRecord['loggerName']);
@@ -109,7 +109,7 @@ class LoggingScreen extends Screen {
         loggerName = 'log';
       }
       // TODO: show level, with some indication of severity
-      // int level = logRecord['level'];
+      int level = logRecord['level'];
       String message = _valueAsString(logRecord['message']);
       // TODO: The VM is not sending the error correctly.
       var error = logRecord['error'];
@@ -122,25 +122,28 @@ class LoggingScreen extends Screen {
         message = message + '\n${_valueAsString(stackTrace)}';
       }
 
-      _log(new LogData(loggerName, message, e.timestamp));
+      bool isError =
+          level != null && level >= Level.SEVERE.value ? true : false;
+      _log(new LogData(loggerName, message, e.timestamp, error: isError));
     });
 
     // Log Flutter frame events.
-    serviceInfo.service.onExtensionEvent.listen((Event e) {
+    service.onExtensionEvent.listen((Event e) {
       if (e.extensionKind == 'Flutter.Frame') {
-        ExtensionData data = e.extensionData;
-        print(data);
-        int number = data.data['number'];
-        int elapsedMicros = data.data['elapsed'];
+        FrameInfo frame = FrameInfo.from(e.extensionData.data);
 
-        // TODO: Show a horizontal bar propertional to the render time.
+        // TODO: Show a horizontal bar proportional to the render time.
+        // #f97c7c
+
+        String div = createFrameDivHtml(frame);
 
         _log(new LogData(
           '${e.extensionKind.toLowerCase()}',
-          '#$number render time ${(elapsedMicros / 1000.0)
+          'frame ${frame.number} ${frame.elapsedMs
               .toStringAsFixed(1)
               .padLeft(4)}ms',
           e.timestamp,
+          extraHtml: div,
         ));
       } else {
         _log(new LogData('${e.extensionKind.toLowerCase()}', e.json.toString(),
@@ -149,13 +152,30 @@ class LoggingScreen extends Screen {
     });
   }
 
+  void _handleConnectionStop(dynamic event) {}
+
   void _log(LogData log) {
     // TODO: make this much more efficient
     List<LogData> data = [log];
-    data.addAll(memoryTable.rows);
-    memoryTable.setRows(data);
+    data.addAll(loggingTable.rows);
 
-    _updateStatus();
+    if (data.length > kMaxLogItemsLength) {
+      data.removeRange(kMaxLogItemsLength, data.length);
+    }
+
+    loggingStateMixin.setState(() {
+      loggingTable.setRows(data);
+      _updateStatus();
+    });
+  }
+
+  String createFrameDivHtml(FrameInfo frame) {
+    String classes = (frame.elapsedMs >= FrameInfo.kTargetMaxFrameTimeMs)
+        ? 'frame-bar over-budget'
+        : 'frame-bar';
+
+    int pixelWidth = (frame.elapsedMs * 3).round();
+    return '<div class="$classes" style="width: ${pixelWidth}px"/>';
   }
 }
 
@@ -171,8 +191,11 @@ class LogData {
   final String kind;
   final String message;
   final int timestamp;
+  final bool error;
+  final String extraHtml;
 
-  LogData(this.kind, this.message, this.timestamp);
+  LogData(this.kind, this.message, this.timestamp,
+      {this.error: false, this.extraHtml});
 }
 
 class LogKindColumn extends Column<LogData> {
@@ -187,24 +210,24 @@ class LogKindColumn extends Column<LogData> {
   dynamic getValue(LogData log) {
     String color = '';
 
-    if (log.kind.startsWith('flutter')) {
-      color = ' style="background-color: #0091ea"';
+    if (log.kind == 'stderr' || log.error) {
+      color = 'style="background-color: #F44336"';
     } else if (log.kind == 'stdout') {
-      color = ' style="background-color: #78909C"';
-    } else if (log.kind == 'stderr') {
-      color = ' style="background-color: #F44336"';
+      color = 'style="background-color: #78909C"';
+    } else if (log.kind.startsWith('flutter')) {
+      color = 'style="background-color: #0091ea"';
     } else if (log.kind == 'gc') {
-      color = ' style="background-color: #424242"';
+      color = 'style="background-color: #424242"';
     }
 
-    return '<span class="label"$color>${log.kind}</span>';
+    return '<span class="label" $color>${log.kind}</span>';
   }
 
   String render(dynamic value) => value;
 }
 
 class LogWhenColumn extends Column<LogData> {
-  static DateFormat timeFormat = new DateFormat("HH:mm:ss SSS'ms'");
+  static DateFormat timeFormat = new DateFormat("HH:mm:ss.SSS");
 
   LogWhenColumn() : super('When');
 
@@ -224,7 +247,19 @@ class LogMessageColumn extends Column<LogData> {
 
   String get cssClass => 'pre-wrap monospace';
 
+  bool get usesHtml => true;
+
   bool get supportsSorting => false;
 
-  dynamic getValue(LogData log) => log.message;
+  dynamic getValue(LogData log) => log;
+
+  String render(dynamic value) {
+    final LogData log = value;
+
+    if (log.extraHtml != null) {
+      return '${log.message} ${log.extraHtml}';
+    } else {
+      return log.message; // TODO: escape html
+    }
+  }
 }
