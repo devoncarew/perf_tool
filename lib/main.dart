@@ -33,8 +33,8 @@ class PerfToolFramework extends Framework {
     setGlobal(ServiceConnectionManager, new ServiceConnectionManager());
 
     addScreen(new MemoryScreen());
-    addScreen(new PerformanceScreen());
     addScreen(new TimelineScreen());
+    addScreen(new PerformanceScreen());
     addScreen(new DeviceScreen());
     addScreen(new LoggingScreen());
 

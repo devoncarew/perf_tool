@@ -82,7 +82,7 @@ class FramesChart extends LineChart<FramesTracker> {
     lastFrameLabel.element.style.textAlign = '-webkit-right';
   }
 
-  void updateFrom(FramesTracker tracker) {
+  void update(FramesTracker tracker) {
     if (dim == null) {
       return;
     }
@@ -132,7 +132,7 @@ class FramesChart extends LineChart<FramesTracker> {
     }
 
     chartElement.setInnerHtml('''
- <svg viewBox="0 0 ${dim.x} ${dim.y}" preserveAspectRatio="none">
+ <svg viewBox="0 0 ${dim.x} ${dim.y}">
  ${svgElements.join('\n')}
  </svg>
  ''');

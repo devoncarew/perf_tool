@@ -51,6 +51,7 @@ class PerformanceScreen extends Screen {
         ..add([
           form()
             ..layoutHorizontal()
+            ..clazz('align-items-center')
             ..add([
               loadSnapshotButton = new PButton('Load snapshot')
                 ..small()
@@ -168,7 +169,9 @@ class PerformanceScreen extends Screen {
 
   void _process(CpuProfile profile) {
     perfTable.setRows(
-        new List<PerfData>.from(profile.functions.map((ProfileFunction f) {
+        new List<PerfData>.from(profile.functions.where((ProfileFunction f) {
+      return f.inclusiveTicks > 0 || f.exclusiveTicks > 0;
+    }).map((ProfileFunction f) {
       int count = math.max(1, profile.sampleCount);
       return new PerfData(
         f.kind,
@@ -207,7 +210,7 @@ class CpuChart extends LineChart<CpuTracker> {
     usageLabel.element.style.right = '0';
   }
 
-  void updateFrom(CpuTracker tracker) {
+  void update(CpuTracker tracker) {
     if (tracker.samples.isEmpty || dim == null) {
       // TODO:
       return;
@@ -221,7 +224,7 @@ class CpuChart extends LineChart<CpuTracker> {
     const int vRange = 100;
 
     chartElement.setInnerHtml('''
-<svg viewBox="0 0 0 0 ${dim.x} ${dim.y}" preserveAspectRatio="none">
+<svg viewBox="0 0 0 0 ${dim.x} ${dim.y}">
 <polyline
     fill="none"
     stroke="#0074d9"
@@ -308,9 +311,11 @@ class PerfColumnInclusive extends Column<PerfData> {
 
   bool get numeric => true;
 
+  //String get cssClass => 'monospace';
+
   dynamic getValue(PerfData row) => row.inclusive;
 
-  String render(dynamic value) => percent(value);
+  String render(dynamic value) => percent2(value);
 }
 
 class PerfColumnSelf extends Column<PerfData> {
@@ -318,9 +323,11 @@ class PerfColumnSelf extends Column<PerfData> {
 
   bool get numeric => true;
 
+  //String get cssClass => 'monospace';
+
   dynamic getValue(PerfData row) => row.self;
 
-  String render(dynamic value) => percent(value);
+  String render(dynamic value) => percent2(value);
 }
 
 class PerfColumnMethodName extends Column<PerfData> {

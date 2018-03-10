@@ -125,15 +125,20 @@ class Table<T> {
       for (Column column in columns) {
         String cssClass = column.cssClass;
 
+        if (cssClass != null && column.numeric) {
+          cssClass = '$cssClass right';
+        } else if (column.numeric) {
+          cssClass = 'right';
+        }
+
         if (column.usesHtml) {
-          tableRow.add(td(
-            c: column.numeric ? 'right' : cssClass,
-          )..setInnerHtml(column.render(column.getValue(row))));
+          tableRow.add(
+            td(c: cssClass)..setInnerHtml(column.render(column.getValue(row))),
+          );
         } else {
-          tableRow.add(td(
-            text: column.render(column.getValue(row)),
-            c: column.numeric ? 'right' : cssClass,
-          ));
+          tableRow.add(
+            td(text: column.render(column.getValue(row)), c: cssClass),
+          );
         }
       }
 

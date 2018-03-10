@@ -252,15 +252,25 @@ class MemoryColumnSize extends Column<ClassHeapStats> {
 
   bool get numeric => true;
 
+  //String get cssClass => 'monospace';
+
   dynamic getValue(ClassHeapStats row) => row.bytesCurrent;
 
-  String render(dynamic value) => '${Column.fastIntl(value ~/ 1024)}k';
+  String render(dynamic value) {
+    if (value < 1024) {
+      return ' ${Column.fastIntl(value)}';
+    } else {
+      return ' ${Column.fastIntl(value ~/ 1024)}k';
+    }
+  }
 }
 
 class MemoryColumnInstanceCount extends Column<ClassHeapStats> {
   MemoryColumnInstanceCount() : super('Count');
 
   bool get numeric => true;
+
+  //String get cssClass => 'monospace';
 
   dynamic getValue(ClassHeapStats row) => row.instancesCurrent;
 
@@ -279,7 +289,7 @@ class MemoryChart extends LineChart<MemoryTracker> {
     heapLabel.element.style.right = '0';
   }
 
-  void updateFrom(MemoryTracker tracker) {
+  void update(MemoryTracker tracker) {
     if (tracker.samples.isEmpty || dim == null) {
       // TODO:
       return;
@@ -306,7 +316,7 @@ class MemoryChart extends LineChart<MemoryTracker> {
     // TODO: draw dots for GC events?
 
     chartElement.setInnerHtml('''
-<svg viewBox="0 0 ${dim.x} ${dim.y}" preserveAspectRatio="none">
+<svg viewBox="0 0 ${dim.x} ${dim.y}">
 <polyline
     fill="none"
     stroke="#0074d9"

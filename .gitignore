@@ -3,6 +3,7 @@
 # Files and directories created by pub
 .packages
 .pub/
+.dart_tool/
 build/
 pubspec.lock
 
