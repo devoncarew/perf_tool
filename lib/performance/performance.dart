@@ -32,11 +32,9 @@ class PerformanceScreen extends Screen {
   PerformanceScreen()
       : super('Performance', 'performance', 'octicon-dashboard') {
     sampleCountStatus = new StatusItem();
-    sampleCountStatus.element.text = '20,766 samples';
     addStatusItem(sampleCountStatus);
 
     sampleFreqStatus = new StatusItem();
-    sampleFreqStatus.element.text = '32 frames per sample @ 1000Hz';
     addStatusItem(sampleFreqStatus);
   }
 

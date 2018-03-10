@@ -352,6 +352,7 @@ a[disabled] {
     bottom: 0;
 }
 
-form.align-items-center {
+form.align-items-center,
+footer.align-items-center {
     align-items: center;
 }

@@ -14,10 +14,14 @@ import '../tables.dart';
 import '../ui/custom.dart';
 import '../ui/elements.dart';
 import '../ui/primer.dart';
+import '../utils.dart';
 
 // TODO: expose _getAllocationProfile
 
 class MemoryScreen extends Screen {
+  StatusItem classCountStatus;
+  StatusItem objectCountStatus;
+
   PButton loadSnapshotButton;
   PButton gcButton;
   Table<ClassHeapStats> memoryTable;
@@ -28,7 +32,13 @@ class MemoryScreen extends Screen {
   MemoryTracker memoryTracker;
   ProgressElement progressElement;
 
-  MemoryScreen() : super('Memory', 'memory', 'octicon-package');
+  MemoryScreen() : super('Memory', 'memory', 'octicon-package') {
+    classCountStatus = new StatusItem();
+    addStatusItem(classCountStatus);
+
+    objectCountStatus = new StatusItem();
+    addStatusItem(objectCountStatus);
+  }
 
   @override
   void createContent(Framework framework, CoreElement mainDiv) {
@@ -51,13 +61,15 @@ class MemoryScreen extends Screen {
                 ..clazz('margin-left')
                 ..display = 'none',
               div()..flex(),
-              gcButton = new PButton('Garbage collect')
-                ..small()
-                ..click(_doGC),
+//              gcButton = new PButton('Garbage collect')
+//                ..small()
+//                ..click(_doGC),
             ])
         ]),
       _createTableView()..clazz('section'),
     ]);
+
+    _updateStatus(null);
 
     // TODO: don't rebuild until the component is active
     serviceInfo.isolateManager.onSelectedIsolateChanged.listen((_) {
@@ -71,6 +83,7 @@ class MemoryScreen extends Screen {
     serviceInfo.onConnectionClosed.listen(_handleConnectionStop);
   }
 
+  // ignore: unused_element
   void _doGC() {
     gcButton.disabled = true;
 
@@ -106,13 +119,8 @@ class MemoryScreen extends Screen {
         return stats.instancesCurrent > 0; //|| stats.instancesAccumulated > 0;
       }).toList();
 
-      heapStats.forEach((stats) {
-        if (stats.classRef.name.isEmpty) {
-          print(stats.json);
-        }
-      });
-
       memoryTable.setRows(heapStats);
+      _updateStatus(heapStats);
     } finally {
       loadSnapshotButton.disabled = false;
     }
@@ -198,6 +206,15 @@ class MemoryScreen extends Screen {
     memoryTable.onSelect.listen((ClassHeapStats row) {
       // TODO:
       print(row);
+
+//      serviceInfo.service.getObject(_isolateId, row.classRef.id).then((result) {
+//        Class c = result;
+//        if (c.library.type =='@Library') {
+//          // user class
+//        } else {
+//          // vm class (Code, Instructions, ...)
+//        }
+//      });
     });
 
     return memoryTable.element;
@@ -223,6 +240,20 @@ class MemoryScreen extends Screen {
     memoryChart.disabled = true;
 
     memoryTracker?.stop();
+  }
+
+  void _updateStatus(List<ClassHeapStats> data) {
+    if (data == null) {
+      classCountStatus.element.text = ' - ';
+      objectCountStatus.element.text = ' - ';
+    } else {
+      classCountStatus.element.text = '${nf.format(data.length)} classes';
+      int objectCount = 0;
+      for (ClassHeapStats stats in data) {
+        objectCount += stats.instancesCurrent;
+      }
+      objectCountStatus.element.text = '${nf.format(objectCount)} objects';
+    }
   }
 }
 

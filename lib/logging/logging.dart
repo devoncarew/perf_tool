@@ -66,7 +66,7 @@ class LoggingScreen extends Screen {
 
   void _updateStatus() {
     int count = loggingTable.rows.length;
-    logCountStatus.element.text = '${nf.format(count)} items';
+    logCountStatus.element.text = '${nf.format(count)} events';
   }
 
   HelpInfo get helpInfo =>
@@ -131,9 +131,6 @@ class LoggingScreen extends Screen {
     service.onExtensionEvent.listen((Event e) {
       if (e.extensionKind == 'Flutter.Frame') {
         FrameInfo frame = FrameInfo.from(e.extensionData.data);
-
-        // TODO: Show a horizontal bar proportional to the render time.
-        // #f97c7c
 
         String div = createFrameDivHtml(frame);
 

@@ -53,6 +53,7 @@ class ServiceConnectionManager {
 
   VmService service;
   String targetCpu;
+  int architectureBits;
   String hostCPU;
   String sdkVersion;
 
@@ -71,6 +72,7 @@ class ServiceConnectionManager {
 
     _service.getVM().then((VM vm) {
       targetCpu = vm.targetCPU;
+      architectureBits = vm.architectureBits;
       hostCPU = vm.hostCPU;
       sdkVersion = vm.version;
       if (sdkVersion.contains(' ')) {
@@ -113,6 +115,7 @@ class ServiceConnectionManager {
   void vmServiceClosed() {
     service = null;
     targetCpu = null;
+    architectureBits = null;
     hostCPU = null;
     sdkVersion = null;
 

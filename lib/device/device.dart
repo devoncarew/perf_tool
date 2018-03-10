@@ -14,6 +14,8 @@ import '../ui/elements.dart';
 // TODO: set toggle values on a full restart (when we see a new isolate)
 
 class DeviceScreen extends Screen {
+  StatusItem deviceStatus;
+
   SetStateMixin framesChartStateMixin = new SetStateMixin();
   ExtensionTracker extensionTracker;
 
@@ -23,12 +25,14 @@ class DeviceScreen extends Screen {
   CoreElement togglesDiv;
   Map<String, bool> boolValues = {};
 
-  // TODO: icon
   DeviceScreen() : super('Device', 'device', 'octicon-device-mobile') {
     visible = false;
 
     serviceInfo.onConnectionAvailable.listen(_handleConnectionStart);
     serviceInfo.onConnectionClosed.listen(_handleConnectionStop);
+
+    deviceStatus = new StatusItem();
+    addStatusItem(deviceStatus);
   }
 
   @override
@@ -72,10 +76,15 @@ class DeviceScreen extends Screen {
         _rebuildTogglesDiv();
       });
     });
+
+    deviceStatus.element.text =
+        '${serviceInfo.targetCpu}-${serviceInfo.architectureBits}';
   }
 
   void _handleConnectionStop(dynamic event) {
     extensionTracker?.stop();
+
+    deviceStatus.element.text = '';
   }
 
   HelpInfo get helpInfo =>
