@@ -78,7 +78,7 @@ class DeviceScreen extends Screen {
     });
 
     deviceStatus.element.text =
-        '${serviceInfo.targetCpu}-${serviceInfo.architectureBits}';
+        '${serviceInfo.vm.targetCPU} ${serviceInfo.vm.architectureBits}-bit';
   }
 
   void _handleConnectionStop(dynamic event) {
@@ -113,6 +113,7 @@ class DeviceScreen extends Screen {
       ..add(new CoreElement('label')
         ..add([
           input = new CoreElement('input')..setAttribute('type', 'checkbox'),
+          span(text: rpc),
           span(text: rpc),
         ])));
 

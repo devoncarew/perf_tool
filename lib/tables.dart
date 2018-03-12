@@ -8,6 +8,10 @@ import 'dart:html';
 import 'ui/elements.dart';
 import 'utils.dart';
 
+// TODO: fixed position header
+
+// TODO: virtualize
+
 class Table<T> {
   final CoreElement element;
 

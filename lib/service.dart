@@ -52,9 +52,7 @@ class ServiceConnectionManager {
   final IsolateManager isolateManager = new IsolateManager();
 
   VmService service;
-  String targetCpu;
-  int architectureBits;
-  String hostCPU;
+  VM vm;
   String sdkVersion;
 
   bool get hasConnection => service != null;
@@ -71,9 +69,7 @@ class ServiceConnectionManager {
     //_service.onReceive.listen((s) => print('<== $s'));
 
     _service.getVM().then((VM vm) {
-      targetCpu = vm.targetCPU;
-      architectureBits = vm.architectureBits;
-      hostCPU = vm.hostCPU;
+      this.vm = vm;
       sdkVersion = vm.version;
       if (sdkVersion.contains(' ')) {
         sdkVersion = sdkVersion.substring(0, sdkVersion.indexOf(' '));
@@ -114,9 +110,7 @@ class ServiceConnectionManager {
 
   void vmServiceClosed() {
     service = null;
-    targetCpu = null;
-    architectureBits = null;
-    hostCPU = null;
+    vm = null;
     sdkVersion = null;
 
     _stateController.add(null);

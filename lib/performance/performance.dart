@@ -147,8 +147,8 @@ class PerformanceScreen extends Screen {
 
   void _updateStatus(CpuProfile profile) {
     if (profile == null) {
-      sampleCountStatus.element.text = ' - ';
-      sampleFreqStatus.element.text = ' - ';
+      sampleCountStatus.element.text = '';
+      sampleFreqStatus.element.text = '';
     } else {
       Duration timeSpan = new Duration(seconds: profile.timeSpan.round());
       String s = timeSpan.toString();

@@ -18,6 +18,8 @@ import '../utils.dart';
 
 // TODO: expose _getAllocationProfile
 
+// TODO: have a 'show vm objects' checkbox
+
 class MemoryScreen extends Screen {
   StatusItem classCountStatus;
   StatusItem objectCountStatus;
@@ -244,8 +246,8 @@ class MemoryScreen extends Screen {
 
   void _updateStatus(List<ClassHeapStats> data) {
     if (data == null) {
-      classCountStatus.element.text = ' - ';
-      objectCountStatus.element.text = ' - ';
+      classCountStatus.element.text = '';
+      objectCountStatus.element.text = '';
     } else {
       classCountStatus.element.text = '${nf.format(data.length)} classes';
       int objectCount = 0;

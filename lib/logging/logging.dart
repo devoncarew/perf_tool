@@ -31,7 +31,7 @@ class LoggingScreen extends Screen {
 
   LoggingScreen() : super('Logging', 'logging', 'octicon-clippy') {
     logCountStatus = new StatusItem();
-    logCountStatus.element.text = ' - ';
+    logCountStatus.element.text = '';
     addStatusItem(logCountStatus);
   }
 
