@@ -89,9 +89,8 @@ class FramesChart extends LineChart<FramesTracker> {
 
     fpsLabel.text = '${tracker.calcRecentFPS().round()} FPS';
     FrameInfo lastFrame = tracker.lastSample;
-    lastFrameLabel.setInnerHtml(
-        'frame ${lastFrame.number}<br>${lastFrame.elapsedMs.toStringAsFixed(
-            1)}ms');
+    lastFrameLabel.setInnerHtml('frame ${lastFrame.number} • '
+        '${lastFrame.elapsedMs.toStringAsFixed(1)}ms');
 
     // re-render the svg
     const num msHeight = 2 * FrameInfo.kTargetMaxFrameTimeMs;
@@ -103,7 +102,7 @@ class FramesChart extends LineChart<FramesTracker> {
     List<String> svgElements = [];
     List<FrameInfo> samples = tracker.samples;
 
-    for (int i = 0; i < 4; i++) {
+    for (int i = 3; i > 0; i--) {
       num y = i * halfFrameHeight * pixPerMs;
       String dashed = i == 2 ? '' : 'stroke-dasharray="10 5" ';
       svgElements.add('<line x1="0" y1="$y" x2="${dim.x}" y2="$y" '
@@ -125,9 +124,9 @@ class FramesChart extends LineChart<FramesTracker> {
           'style="fill:$color"><title>${frame.elapsedMs}ms</title></rect>');
 
       if (frame.frameGroupStart) {
-        x -= units;
-        svgElements.add('<line x1="$x" y1="0" x2="$x" y2="${dim.y}" '
-            'stroke-width="0.5" stroke="#ddd"/>');
+        double lineX = x - (units / 2);
+        svgElements.add('<line x1="$lineX" y1="0" x2="$lineX" y2="${dim.y}" '
+            'stroke-width="0.5" stroke-dasharray="4 4" stroke="#ddd"/>');
       }
     }
 

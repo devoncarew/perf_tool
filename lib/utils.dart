@@ -74,7 +74,8 @@ String funcRefName(FuncRef ref) {
 }
 
 class Property<T> {
-  final StreamController<T> _changeController = new StreamController.broadcast();
+  final StreamController<T> _changeController =
+      new StreamController.broadcast();
   T _value;
 
   Property(this._value);

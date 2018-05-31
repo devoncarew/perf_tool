@@ -9,7 +9,7 @@ class ProgressElement extends CoreElement {
   int _max = 100;
   CoreElement completeElement;
 
-  ProgressElement() : super('div'){
+  ProgressElement() : super('div') {
     clazz('progress-element');
     add(completeElement = div(c: 'complete'));
   }

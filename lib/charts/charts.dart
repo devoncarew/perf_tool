@@ -23,7 +23,9 @@ abstract class LineChart<T> {
     window.onResize.listen((e) => _updateSize());
     Timer.run(_updateSize);
 
-    chartElement = parent.add(div()..layoutVertical()..flex());
+    chartElement = parent.add(div()
+      ..layoutVertical()
+      ..flex());
 
     chartElement.setInnerHtml('''
 <svg viewBox="0 0 500 100">

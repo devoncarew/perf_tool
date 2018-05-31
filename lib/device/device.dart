@@ -114,7 +114,6 @@ class DeviceScreen extends Screen {
         ..add([
           input = new CoreElement('input')..setAttribute('type', 'checkbox'),
           span(text: rpc),
-          span(text: rpc),
         ])));
 
     if (boolValues.containsKey(rpc)) {

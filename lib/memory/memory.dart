@@ -479,9 +479,8 @@ class MemoryTracker {
     samples.add(sample);
 
     // delete old samples
-    // TODO: Interpolate the left-most point if we remove a sample.
     final int oldestTime =
-        (new DateTime.now().subtract(kMaxGraphTime).subtract(kUpdateDelay))
+        (new DateTime.now().subtract(kMaxGraphTime).subtract(kUpdateDelay * 2))
             .millisecondsSinceEpoch;
     samples.retainWhere((HeapSample sample) => sample.time >= oldestTime);
 
