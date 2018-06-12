@@ -70,3 +70,32 @@ class PFlash extends CoreElement {
     return add(span(c: 'octicon octicon-x flash-close js-flash-close'));
   }
 }
+
+class PTabNav extends CoreElement {
+  PTabNavTab selectedTab;
+
+  PTabNav(List<PTabNavTab> tabs) : super('div', classes: 'tabnav') {
+    CoreElement nav = add(new CoreElement('nav', classes: 'tabnav-tabs'));
+    nav.add(tabs);
+
+    if (tabs.isNotEmpty) {
+      selectTab(tabs.first);
+    }
+
+    for (PTabNavTab tab in tabs) {
+      tab.click(() {
+        selectTab(tab);
+      });
+    }
+  }
+
+  void selectTab(PTabNavTab tab) {
+    selectedTab?.toggleClass('selected', false);
+    selectedTab = tab;
+    selectedTab?.toggleClass('selected', true);
+  }
+}
+
+class PTabNavTab extends CoreElement {
+  PTabNavTab(String name) : super('div', classes: 'tabnav-tab', text: name);
+}

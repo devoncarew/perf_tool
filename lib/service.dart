@@ -96,9 +96,6 @@ class ServiceConnectionManager {
       service.streamListen('_Graph');
       service.streamListen('_Logging');
 
-      // TODO:
-      service.onEvent('Timeline').listen(print);
-
       isolateManager.onIsolateCreated.listen(print);
       isolateManager.onSelectedIsolateChanged.listen(print);
       isolateManager.onIsolateExited.listen(print);

@@ -77,7 +77,7 @@ class Framework {
       Uri uri = Uri.parse(window.location.toString());
       String portStr = uri.queryParameters['port'];
       if (portStr != null) {
-        port = int.parse(portStr, onError: (_) => null);
+        port = int.tryParse(portStr);
       }
     }
 

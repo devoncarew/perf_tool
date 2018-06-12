@@ -9,7 +9,7 @@ import 'package:vm_service_lib/vm_service_lib.dart';
 import '../framework/framework.dart';
 import '../globals.dart';
 import '../tables.dart';
-import '../timeline/timeline.dart';
+import '../timeline/fps.dart';
 import '../ui/elements.dart';
 import '../utils.dart';
 
