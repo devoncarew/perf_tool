@@ -444,6 +444,7 @@ div.tabnav {
     padding: 0 2px;
     position: absolute;
     overflow-x: hidden;
+    cursor: default;
 }
 
 .frame-panel {
@@ -461,4 +462,22 @@ div.tabnav-tab {
 
 [hidden] {
     visibility: hidden;
+}
+
+.btn-group .btn:first-child:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.btn-group .btn:not(:first-child):not(:last-child) {
+    border-radius: 0;
+}
+
+.btn-group .btn+.btn {
+    margin-left: -1px;
+}
+
+.btn-group .btn:last-child:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }

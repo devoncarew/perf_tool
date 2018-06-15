@@ -38,12 +38,20 @@ class TimelineScreen extends Screen {
   void createContent(Framework framework, CoreElement mainDiv) {
     FrameDetailsUI frameDetailsUI;
 
+    // TODO: pause and resume
+
+    PButton debugDrawButton = new PButton('Debug draw')..small();
+    PButton perfOverlayButton = new PButton('Performance overlay')..small();
+    PButton debugBannerButton = new PButton('Debug banner')
+      ..small()
+      ..clazz('selected');
+
     mainDiv.add([
       createLiveChartArea(),
       div(c: 'section'),
       div(c: 'section')
+        ..layoutHorizontal()
         ..add([
-          div()..flex(),
           new PButton('Start timeline recording')
             ..small()
             ..primary()
@@ -52,6 +60,13 @@ class TimelineScreen extends Screen {
             ..small()
             ..clazz('margin-left')
             ..click(_stopTimeline),
+          div()..flex(),
+          div(c: 'btn-group')
+            ..add([
+              debugDrawButton,
+              perfOverlayButton,
+              debugBannerButton,
+            ]),
         ]),
       div(c: 'section')
         ..add([timelineFramesUI = new TimelineFramesUI(timelineFramesBuilder)]),
@@ -60,6 +75,34 @@ class TimelineScreen extends Screen {
         ..flex()
         ..add(frameDetailsUI = new FrameDetailsUI()..attribute('hidden')),
     ]);
+
+    debugDrawButton.click(() {
+      final bool wasSelected =
+          debugDrawButton.element.classes.contains('selected');
+      debugDrawButton.toggleClass('selected');
+      serviceInfo.service.callServiceExtension('ext.flutter.debugPaint',
+          isolateId: serviceInfo.isolateManager.selectedIsolate.id,
+          args: {'enabled': !wasSelected});
+    });
+
+    perfOverlayButton.click(() {
+      final bool wasSelected =
+          perfOverlayButton.element.classes.contains('selected');
+      perfOverlayButton.toggleClass('selected');
+      serviceInfo.service.callServiceExtension(
+          'ext.flutter.showPerformanceOverlay',
+          isolateId: serviceInfo.isolateManager.selectedIsolate.id,
+          args: {'enabled': !wasSelected});
+    });
+
+    debugBannerButton.click(() {
+      final bool wasSelected =
+          debugBannerButton.element.classes.contains('selected');
+      debugBannerButton.toggleClass('selected');
+      serviceInfo.service.callServiceExtension('ext.flutter.debugAllowBanner',
+          isolateId: serviceInfo.isolateManager.selectedIsolate.id,
+          args: {'enabled': !wasSelected});
+    });
 
     serviceInfo.onConnectionAvailable.listen(_handleConnectionStart);
     if (serviceInfo.hasConnection) {

@@ -29,7 +29,7 @@ class LoggingScreen extends Screen {
   StatusItem logCountStatus;
   SetStateMixin loggingStateMixin = new SetStateMixin();
 
-  LoggingScreen() : super('Logging', 'logging', 'octicon-clippy') {
+  LoggingScreen() : super('Logs', 'logs', 'octicon-clippy') {
     logCountStatus = new StatusItem();
     logCountStatus.element.text = '';
     addStatusItem(logCountStatus);
@@ -70,7 +70,7 @@ class LoggingScreen extends Screen {
   }
 
   HelpInfo get helpInfo =>
-      new HelpInfo('logging & events docs', 'http://www.cheese.com');
+      new HelpInfo('logs view docs', 'http://www.cheese.com');
 
   void _handleConnectionStart(VmService service) {
     if (ref == null) return;

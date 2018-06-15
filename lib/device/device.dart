@@ -87,8 +87,7 @@ class DeviceScreen extends Screen {
     deviceStatus.element.text = '';
   }
 
-  HelpInfo get helpInfo =>
-      new HelpInfo('timeline docs', 'http://www.cheese.com');
+  HelpInfo get helpInfo => null;
 
   void _rebuildTogglesDiv() {
     if (togglesDiv == null || extensionTracker == null) return;
